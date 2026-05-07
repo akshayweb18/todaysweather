@@ -125,6 +125,11 @@ export default function GoogleWeatherApp() {
     setGeoLoading(true);
     try {
       const res = await fetch(`/api/geo?q=${encodeURIComponent(q)}`);
+      const contentType = res.headers.get('content-type') || '';
+      if (!res.ok || !contentType.includes('application/json')) {
+        setSuggestions([]);
+        return;
+      }
       const data = await res.json();
       if (data.success) setSuggestions(data.data);
     } catch (err) {
@@ -148,19 +153,28 @@ export default function GoogleWeatherApp() {
 
   const fetchWeather = async (searchCity: string = city, lat?: number, lon?: number) => {
     setLoading(true);
+    setError('');
     try {
       let url = `/api/agent?city=${encodeURIComponent(searchCity)}`;
       if (lat !== undefined && lon !== undefined) {
         url = `/api/agent?lat=${lat}&lon=${lon}`;
       }
       const res = await fetch(url);
+      const contentType = res.headers.get('content-type') || '';
+      if (!res.ok || !contentType.includes('application/json')) {
+        const responseText = await res.text();
+        throw new Error(`API returned non-JSON response (${res.status}): ${responseText.slice(0, 120)}`);
+      }
       const data = await res.json();
       if (data.success) {
         console.log("Fetched Data for:", data.data.location, data.data.lat, data.data.lon);
         setWeather(data.data);
+      } else {
+        setError(data.error || 'Unable to fetch weather data.');
       }
     } catch (err) {
       console.error(err);
+      setError('Weather service temporarily unavailable. Please try again.');
     } finally {
       setLoading(false);
     }
