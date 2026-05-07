@@ -15,31 +15,21 @@ const DefaultIcon = L.icon({
 });
 L.Marker.prototype.options.icon = DefaultIcon;
 
-function ChangeView({ center }: { center: L.LatLngExpression }) {
-  const map = useMap();
-  React.useEffect(() => {
-    map.setView(center, map.getZoom(), {
-      animate: true,
-      duration: 1.5
-    });
-  }, [center, map]);
-  return null;
-}
-
 export const InteractiveMap: React.FC<{ lat: number; lon: number; city: string }> = ({ lat, lon, city }) => {
   if (typeof window === 'undefined') return null;
 
   const center: L.LatLngExpression = [lat || 19.033, lon || 73.0297];
+  const mapKey = `${lat || 19.033}-${lon || 73.0297}`;
 
   return (
     <div className="w-full h-full  overflow-hidden border border-white/10 relative group shadow-[0_0_100px_rgba(0,0,0,0.5)]">
-      <MapContainer 
+      <MapContainer
+        key={mapKey}
         center={center} 
         zoom={12} 
         style={{ height: '100%', width: '100%', background: '#0a0a0a' }}
         zoomControl={false}
       >
-        <ChangeView center={center} />
         {/* Google Satellite Hybrid Tiles - High Reliability */}
         <TileLayer
           url="https://{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}"

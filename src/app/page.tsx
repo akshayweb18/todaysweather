@@ -216,9 +216,9 @@ export default function GoogleWeatherApp() {
 
         {/* 🔍 Google Style Search Bar */}
         <header className="flex flex-col md:flex-row items-center gap-4 w-full relative">
-          <div className="flex-1 flex items-center gap-4 bg-white/80 backdrop-blur-md px-6 py-3 rounded-full shadow-sm border border-[#f0f0f0] w-full relative">
+          <div className="flex-1 flex items-center flex-nowrap gap-2 bg-white/80 backdrop-blur-md px-3 md:px-6 py-3 rounded-full shadow-sm border border-[#f0f0f0] w-full relative overflow-hidden">
             <div className="relative">
-              <RiSearchLine className="text-[#444746] text-xl" />
+              <RiSearchLine className="text-[#444746] text-lg md:text-xl shrink-0" />
               {geoLoading && (
                 <div className="absolute inset-0 border-2 border-blue-500 border-t-transparent rounded-full animate-spin scale-125" />
               )}
@@ -229,9 +229,9 @@ export default function GoogleWeatherApp() {
               onChange={handleInputChange}
               onKeyDown={(e) => e.key === 'Enter' && fetchWeather()}
               placeholder="Search city"
-              className="bg-transparent border-none outline-none flex-1 text-sm font-medium text-[#1f1f1f] placeholder:text-[#444746]"
+              className="bg-transparent border-none outline-none flex-1 min-w-0 text-sm font-medium text-[#1f1f1f] placeholder:text-[#444746]"
             />
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 md:gap-2 w-auto justify-end shrink-0">
               <button
                 onClick={() => {
                   if ("geolocation" in navigator) {
@@ -241,17 +241,18 @@ export default function GoogleWeatherApp() {
                     );
                   }
                 }}
-                className="p-2 hover:bg-[#f0f4f9] rounded-full text-[#0b57d0] transition-colors"
+                className="p-2 hover:bg-[#f0f4f9] rounded-full text-[#0b57d0] transition-colors shrink-0"
                 title="Detect Current Location"
               >
                 <RiNavigationLine className="text-xl" />
               </button>
-              <div className="w-px h-6 bg-[#f0f0f0]" />
+              <div className="w-px h-6 bg-[#f0f0f0] hidden md:block" />
               <button
                 onClick={() => fetchWeather()}
-                className="ml-2 px-6 py-2 bg-[#0b57d0] hover:bg-[#0842a0] text-white rounded-full text-sm font-medium shadow-sm transition-all active:scale-95"
+                className="ml-1 md:ml-2 h-10 w-10 md:w-auto md:px-6 py-2 bg-[#0b57d0] hover:bg-[#0842a0] text-white rounded-full text-sm font-medium shadow-sm transition-all active:scale-95 whitespace-nowrap flex items-center justify-center md:justify-start gap-0 md:gap-2"
               >
-                Search
+                <RiSearchLine className="text-lg md:hidden" />
+                <span className="hidden md:inline">Search</span>
               </button>
             </div>
 
