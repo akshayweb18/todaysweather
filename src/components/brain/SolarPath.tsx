@@ -21,7 +21,7 @@ export const SolarPath: React.FC<SolarPathProps> = ({
   timezone,
   dt 
 }) => {
-  const { currentProgress, daylightDuration, statusText, timeLeft, sunriseStr, sunsetStr } = useMemo(() => {
+  const state = useMemo(() => {
     try {
       // Use raw timestamps if available, otherwise fallback to parsing strings
       const rise = rawSunrise ? rawSunrise * 1000 : 0;
@@ -75,19 +75,24 @@ export const SolarPath: React.FC<SolarPathProps> = ({
       const sunriseStr = formatTime(rawSunrise || 0);
       const sunsetStr = formatTime(rawSunset || 0);
 
+      const isNight = now > set || now < rise;
+
       return {
         currentProgress: Math.min(Math.max(progress, 0), 1),
         daylightDuration: `${h}h ${m}m`,
         statusText: status,
         timeLeft: remaining,
         sunriseStr,
-        sunsetStr
+        sunsetStr,
+        isNight
       };
     } catch (e) {
       console.error("[Solar Error]", e);
       return { currentProgress: 0.5, daylightDuration: '12h', statusText: 'Active', timeLeft: 'N/A' };
     }
   }, [rawSunrise, rawSunset, dt]);
+
+  const { currentProgress, daylightDuration, statusText, timeLeft, sunriseStr, sunsetStr, isNight } = state;
 
   return (
     <div className="flex flex-col gap-8 w-full py-4">
@@ -106,31 +111,48 @@ export const SolarPath: React.FC<SolarPathProps> = ({
             <motion.path
               d="M 5 50 A 45 45 0 0 1 95 50"
               fill="none"
-              stroke="#fbbf24"
+              stroke={isNight ? "#6366f1" : "#fbbf24"}
               strokeWidth="4"
               strokeLinecap="round"
               initial={{ pathLength: 0 }}
               animate={{ pathLength: currentProgress }}
               transition={{ duration: 1.5 }}
             />
+
+            {/* 🌙 / ☀️ Dynamic Celestial Marker */}
+            <motion.g
+              animate={{ 
+                x: 50 + 45 * Math.cos((1 - currentProgress) * Math.PI),
+                y: 50 - 45 * Math.sin((1 - currentProgress) * Math.PI)
+              }}
+              transition={{ duration: 1.5, ease: "easeOut" }}
+            >
+              {isNight ? (
+                // 🌙 Tactical Moon
+                <g>
+                  <circle r="7" fill="#818CF8" className="drop-shadow-[0_0_10px_rgba(129,140,248,0.6)]" />
+                  <circle cx="3" cy="-1" r="6" fill="#1e1b4b" />
+                </g>
+              ) : (
+                // ☀️ Tactical Sun
+                <g>
+                  <circle r="6" fill="#FCD34D" className="drop-shadow-[0_0_8px_rgba(251,191,36,0.8)]" />
+                  <circle r="4" fill="#FBBF24" />
+                  {[...Array(8)].map((_, i) => (
+                    <rect
+                      key={i}
+                      x="-1" y="-9" width="2" height="4" rx="1"
+                      fill="#FBBF24"
+                      transform={`rotate(${i * 45})`}
+                    />
+                  ))}
+                </g>
+              )}
+            </motion.g>
           </svg>
         </div>
 
-        {/* ☀️ Big Animated Sun Marker */}
-        <div className="absolute inset-0 flex items-end justify-center pointer-events-none">
-          <motion.div
-            className="flex flex-col items-center gap-1 mb-8"
-            animate={{
-              x: `${(currentProgress * 80) - 40}%`,
-              y: `-${Math.sin(currentProgress * Math.PI) * 60}px`
-            }}
-          >
-            <RiSunFill className="text-4xl text-yellow-400 drop-shadow-[0_0_15px_rgba(251,191,36,0.6)]" />
-            <div className="bg-black/90 text-white text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-tighter">
-              YOU
-            </div>
-          </motion.div>
-        </div>
+
 
         {/* Labels */}
         <div className="flex justify-between items-center w-full relative z-10">
