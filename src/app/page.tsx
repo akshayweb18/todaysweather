@@ -30,6 +30,8 @@ import { ClimateAnalytics } from '@/components/brain/ClimateAnalytics';
 import { TacticalMetrics } from '@/components/brain/TacticalMetrics';
 import { SolarPath } from '@/components/brain/SolarPath';
 import { PressureGauge } from '@/components/brain/PressureGauge';
+import { WindCompass } from '@/components/brain/WindCompass';
+import { WeatherAtmosphere } from '@/components/brain/WeatherAtmosphere';
 
 const InteractiveMap = dynamic(
   () => import('@/components/brain/InteractiveMap').then(mod => mod.InteractiveMap),
@@ -51,73 +53,7 @@ const BentoCard = ({ title, icon: Icon, children, className }: any) => (
   </motion.div>
 );
 
-const WeatherAtmosphere = ({ condition }: { condition: string }) => {
-  const c = condition?.toLowerCase() || 'clear';
 
-  return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-      {/* 🌧️ Rain Animation */}
-      {c.includes('rain') && (
-        <div className="absolute inset-0">
-          {[...Array(30)].map((_, i) => (
-            <motion.div
-              key={i}
-              initial={{ y: -20, opacity: 0 }}
-              animate={{ y: '110vh', opacity: [0, 0.5, 0] }}
-              transition={{
-                duration: 1 + Math.random() * 2,
-                repeat: Infinity,
-                delay: Math.random() * 2,
-                ease: "linear"
-              }}
-              className="absolute w-[1px] h-12 bg-blue-400/30"
-              style={{ left: `${Math.random() * 100}%` }}
-            />
-          ))}
-        </div>
-      )}
-
-      {/* ☁️ Cloud Animation */}
-      {c.includes('cloud') && (
-        <div className="absolute inset-0">
-          {[...Array(5)].map((_, i) => (
-            <motion.div
-              key={i}
-              initial={{ x: -200, opacity: 0 }}
-              animate={{ x: '110vw', opacity: [0, 0.2, 0] }}
-              transition={{
-                duration: 20 + Math.random() * 40,
-                repeat: Infinity,
-                delay: Math.random() * 10,
-                ease: "linear"
-              }}
-              className="absolute w-96 h-96 bg-white/20 blur-[100px] rounded-full"
-              style={{ top: `${Math.random() * 60}%` }}
-            />
-          ))}
-        </div>
-      )}
-
-      {/* ☀️ Solar Glow */}
-      {(c.includes('clear') || c.includes('sun')) && (
-        <motion.div
-          animate={{ scale: [1, 1.2, 1], rotate: 360 }}
-          transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
-          className="absolute -top-40 -right-40 w-[600px] h-[600px] bg-yellow-400/10 blur-[120px] rounded-full"
-        />
-      )}
-
-      {/* ⚡ Thunder Flash */}
-      {(c.includes('storm') || c.includes('thunder')) && (
-        <motion.div
-          animate={{ opacity: [0, 0, 0.3, 0, 0.5, 0, 0] }}
-          transition={{ duration: 4, repeat: Infinity, delay: 2 }}
-          className="absolute inset-0 bg-white"
-        />
-      )}
-    </div>
-  );
-};
 
 export default function GoogleWeatherApp() {
   const [weather, setWeather] = useState<any>(null);
@@ -248,14 +184,20 @@ export default function GoogleWeatherApp() {
   if (!mounted) return null;
 
   return (
-    <main className={`min-h-screen ${theme} transition-all duration-1000 pb-4 px-4 md:px-8 relative overflow-hidden`}>
+    <main className="min-h-screen bg-[#f8f9fa] text-[#1f1f1f] font-sans selection:bg-[#0b57d0]/10 selection:text-[#0b57d0] overflow-x-hidden relative">
       {/* 🌌 Cosmic Background Layer */}
       <div className="fixed inset-0 bg-gradient-to-br from-white via-[#f0f4f9] to-[#e8f0fe] -z-20" />
       <div className="fixed inset-0 opacity-30 pointer-events-none -z-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]" />
-      {/* 🌪️ Atmospheric Layer */}
-      <WeatherAtmosphere condition={weather?.mainCondition} />
 
-      <div className="max-w-4xl mx-auto pt-6 space-y-6 relative z-10">
+      {/* 🌪️ Live Weather Atmosphere */}
+      <WeatherAtmosphere condition={weather?.mainCondition || 'clear'} />
+
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
+        className="max-w-4xl mx-auto pt-4 md:pt-6 px-4 md:px-0 space-y-6 relative z-10"
+      >
 
         {/* 🔍 Google Style Search Bar */}
         <header className="flex flex-col md:flex-row items-center gap-4 w-full relative z-[100]">
@@ -443,17 +385,17 @@ export default function GoogleWeatherApp() {
         {/* 🛰️ Satellite Surveillance Map - Primary Tactical View */}
         <div id="weather-map" className="-mx-4 md:mx-0 mb-6 scroll-mt-24">
           <div className="bg-slate-900 md:rounded-[40px] overflow-hidden border-y md:border border-white/10 shadow-2xl relative h-[450px] md:h-[500px]">
-             <div className="absolute top-6 left-6 z-10 flex flex-col gap-1 pointer-events-none">
-                <div className="flex items-center gap-2 px-3 py-1 bg-black/60 backdrop-blur-md rounded-full border border-white/10">
-                   <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
-                   <span className="text-[10px] font-black text-white uppercase tracking-widest">Satellite_Live</span>
-                </div>
-                <h3 className="text-lg font-black text-white tracking-tight drop-shadow-lg">Surveillance Radar</h3>
-             </div>
-             <InteractiveMap 
-              lat={weather?.lat} 
-              lon={weather?.lon} 
-              city={weather?.location} 
+            <div className="absolute top-6 left-6 z-10 flex flex-col gap-1 pointer-events-none">
+              <div className="flex items-center gap-2 px-3 py-1 bg-black/60 backdrop-blur-md rounded-full border border-white/10">
+                <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
+                <span className="text-[10px] font-black text-white uppercase tracking-widest">Satellite_Live</span>
+              </div>
+              <h3 className="text-lg font-black text-white tracking-tight drop-shadow-lg">Surveillance Radar</h3>
+            </div>
+            <InteractiveMap
+              lat={weather?.lat}
+              lon={weather?.lon}
+              city={weather?.location}
             />
           </div>
         </div>
@@ -472,11 +414,12 @@ export default function GoogleWeatherApp() {
           </BentoCard>
 
           <TacticalMetrics weather={weather} />
+
+          {/* Wind Orientation Compass - Full Width Tactical View */}
+          <BentoCard title="Wind Orientation" icon={RiCompass3Line} className="md:col-span-2">
+            <WindCompass deg={weather?.windDeg} speed={weather?.windSpeed} />
+          </BentoCard>
         </div>
-
-
-
-
 
         <div id="solar-telemetry" className="grid grid-cols-1 gap-4 scroll-mt-24">
           <BentoCard title="Sunrise & Sunset" icon={RiSunLine} className="md:col-span-1">
@@ -496,18 +439,20 @@ export default function GoogleWeatherApp() {
             <PressureGauge pressure={weather?.pressure} />
           </BentoCard>
         </div>
+      </motion.div>
 
-        <footer className="pt-6 pb-4 flex flex-col items-center gap-4 border-t border-slate-200/50 mt-4">
-          <div className="flex flex-col items-center gap-1">
+      <footer className="w-full py-8 border-t border-slate-200/50 relative z-20 mt-12 bg-white/30 backdrop-blur-sm">
+        <div className="max-w-4xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="flex flex-col items-center md:items-start gap-1">
             <p className="text-sm font-black text-slate-900 tracking-tight">
               Weather App Developed by <span className="bg-gradient-to-r from-[#0b57d0] to-[#0842a0] bg-clip-text text-transparent">Akshay Chaudhari</span>
             </p>
-            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center">
+            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
               Tactical Intelligence • © 2026
             </p>
           </div>
 
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-4">
             <button
               onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
               className="p-3 hover:bg-slate-100 rounded-full transition-all text-slate-400 hover:text-[#0b57d0] group"
@@ -530,8 +475,8 @@ export default function GoogleWeatherApp() {
               <RiSunLine className="text-xl group-hover:scale-110 transition-transform" />
             </button>
           </div>
-        </footer>
-      </div>
+        </div>
+      </footer>
     </main>
   );
 }
