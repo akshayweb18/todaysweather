@@ -39,10 +39,14 @@ export const InteractiveMap: React.FC<{ lat: number; lon: number; city: string }
   const [mounted, setMounted] = React.useState(false);
   const [activeLayer, setActiveLayer] = React.useState<string | null>(null);
   const [opacity, setOpacity] = React.useState(0.6);
+  const [map, setMap] = React.useState<L.Map | null>(null);
 
   React.useEffect(() => {
     setMounted(true);
-    return () => setMounted(false);
+    return () => {
+      setMounted(false);
+      setMap(null);
+    };
   }, []);
 
   // Unique key to prevent container reuse issues
@@ -55,37 +59,42 @@ export const InteractiveMap: React.FC<{ lat: number; lon: number; city: string }
   return (
     <div className="w-full h-full overflow-hidden border border-white/10 relative group shadow-[0_0_100px_rgba(0,0,0,0.5)] bg-[#0a0a0a]">
       <MapContainer
-        key={`${lat}-${lon}`}
+        key={`tactical-map-${lat}-${lon}`}
         center={center}
         zoom={12}
         style={{ height: '100%', width: '100%', background: '#0a0a0a' }}
         zoomControl={false}
         scrollWheelZoom={false}
         attributionControl={false}
+        ref={setMap}
       >
-        <ChangeView center={center} />
-        {/* Google Satellite Hybrid Tiles */}
-        <TileLayer
-          url="https://{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}"
-          subdomains={['mt0', 'mt1', 'mt2', 'mt3']}
-          attribution='&copy; Google Maps'
-        />
-        {activeLayer && (
-          <TileLayer
-            key={`${activeLayer}-${opacity}`}
-            url={`/api/map/${activeLayer}/{z}/{x}/{y}`}
-            opacity={opacity}
-          />
+        {map && (
+          <>
+            <ChangeView center={center} />
+            {/* Google Satellite Hybrid Tiles */}
+            <TileLayer
+              url="https://{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}"
+              subdomains={['mt0', 'mt1', 'mt2', 'mt3']}
+              attribution='&copy; Google Maps'
+            />
+            {activeLayer && (
+              <TileLayer
+                key={`${activeLayer}-${opacity}`}
+                url={`/api/map/${activeLayer}/{z}/{x}/{y}`}
+                opacity={opacity}
+              />
+            )}
+            <Marker position={center}>
+              <Popup>
+                <div className="p-2 min-w-[120px]">
+                  <div className="text-[10px] font-black uppercase text-slate-500 mb-1">Target_Loc</div>
+                  <div className="text-xs font-bold text-slate-900">{city}</div>
+                  <div className="text-[8px] font-mono text-cyan-600 mt-2">LAT: {lat?.toFixed(4) || '0.0000'} LON: {lon?.toFixed(4) || '0.0000'}</div>
+                </div>
+              </Popup>
+            </Marker>
+          </>
         )}
-        <Marker position={center}>
-          <Popup>
-            <div className="p-2 min-w-[120px]">
-              <div className="text-[10px] font-black uppercase text-slate-500 mb-1">Target_Loc</div>
-              <div className="text-xs font-bold text-slate-900">{city}</div>
-              <div className="text-[8px] font-mono text-cyan-600 mt-2">LAT: {lat?.toFixed(4) || '0.0000'} LON: {lon?.toFixed(4) || '0.0000'}</div>
-            </div>
-          </Popup>
-        </Marker>
       </MapContainer>
 
       {/* Cinematic HUD Overlay */}

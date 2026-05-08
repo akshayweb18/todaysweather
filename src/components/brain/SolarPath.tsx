@@ -21,7 +21,7 @@ export const SolarPath: React.FC<SolarPathProps> = ({
   timezone,
   dt 
 }) => {
-  const { currentProgress, daylightDuration, statusText, timeLeft } = useMemo(() => {
+  const { currentProgress, daylightDuration, statusText, timeLeft, sunriseStr, sunsetStr } = useMemo(() => {
     try {
       // Use raw timestamps if available, otherwise fallback to parsing strings
       const rise = rawSunrise ? rawSunrise * 1000 : 0;
@@ -62,11 +62,26 @@ export const SolarPath: React.FC<SolarPathProps> = ({
         remaining = `Sunset in ${diffH}h ${diffM}m`;
       }
 
+      // Format display strings using the timezone offset
+      const formatTime = (ts: number) => {
+        if (!ts) return '--:--';
+        // OpenWeather timezone is in seconds. 
+        // We create a Date object in UTC and add the offset.
+        const date = new Date((ts + (timezone || 0)) * 1000);
+        return date.getUTCHours().toString().padStart(2, '0') + ':' + 
+               date.getUTCMinutes().toString().padStart(2, '0');
+      };
+
+      const sunriseStr = formatTime(rawSunrise || 0);
+      const sunsetStr = formatTime(rawSunset || 0);
+
       return {
         currentProgress: Math.min(Math.max(progress, 0), 1),
         daylightDuration: `${h}h ${m}m`,
         statusText: status,
-        timeLeft: remaining
+        timeLeft: remaining,
+        sunriseStr,
+        sunsetStr
       };
     } catch (e) {
       console.error("[Solar Error]", e);
@@ -121,13 +136,13 @@ export const SolarPath: React.FC<SolarPathProps> = ({
         <div className="flex justify-between items-center w-full relative z-10">
           <div className="flex flex-col items-start">
             <RiSunLine className="text-orange-400 text-2xl mb-1" />
-            <span className="text-sm font-black text-[#1f1f1f]">{sunrise}</span>
+            <span className="text-sm font-black text-[#1f1f1f]">{sunriseStr}</span>
             <span className="text-[10px] font-bold text-[#5f6368] uppercase">Sunrise</span>
           </div>
 
           <div className="flex flex-col items-end">
             <RiMoonFill className="text-blue-500 text-2xl mb-1" />
-            <span className="text-sm font-black text-[#1f1f1f]">{sunset}</span>
+            <span className="text-sm font-black text-[#1f1f1f]">{sunsetStr}</span>
             <span className="text-[10px] font-bold text-[#5f6368] uppercase">Sunset</span>
           </div>
         </div>

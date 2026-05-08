@@ -38,19 +38,48 @@ const InteractiveMap = dynamic(
   { ssr: false, loading: () => <div className="w-full h-full bg-slate-50 animate-pulse rounded-[28px]" /> }
 );
 
-const BentoCard = ({ title, icon: Icon, children, className }: any) => (
+const BentoCard = ({ title, icon: Icon, children, className, loading }: any) => (
   <motion.div
-    whileHover={{ y: -4 }}
+    whileHover={loading ? {} : { y: -4 }}
     className={`bg-white/75 backdrop-blur-2xl p-8 flex flex-col gap-6 rounded-[40px] border border-white/60 shadow-[0_12px_40px_rgba(0,0,0,0.06)] ${className}`}
   >
     {title && (
       <div className="flex items-center gap-3 text-[#444746]">
-        <Icon className="text-2xl" />
+        {Icon && <Icon className="text-2xl" />}
         <span className="text-sm font-bold uppercase tracking-[0.15em]">{title}</span>
       </div>
     )}
-    {children}
+    {loading ? (
+      <div className="space-y-4">
+        <div className="h-4 bg-slate-200 rounded-full w-2/3 animate-pulse" />
+        <div className="h-24 bg-slate-100 rounded-[24px] w-full animate-pulse" />
+        <div className="flex gap-2">
+          <div className="h-4 bg-slate-200 rounded-full w-1/4 animate-pulse" />
+          <div className="h-4 bg-slate-200 rounded-full w-1/4 animate-pulse" />
+        </div>
+      </div>
+    ) : children}
   </motion.div>
+);
+
+const MainSkeleton = () => (
+  <div className="flex flex-col items-center gap-8 w-full max-w-4xl mx-auto py-10">
+    <div className="h-10 w-48 bg-white/70 rounded-full animate-pulse border border-white/40 shadow-sm" />
+    <div className="flex flex-col items-center gap-6 w-full">
+      <div className="h-28 w-64 bg-slate-200/50 rounded-3xl animate-pulse" />
+      <div className="h-12 w-80 bg-white/50 rounded-full animate-pulse" />
+      <div className="h-48 w-48 bg-blue-50/50 rounded-full animate-pulse blur-xl" />
+    </div>
+    <div className="w-full space-y-6">
+      <div className="h-40 w-full bg-white/75 rounded-[40px] animate-pulse" />
+      <div className="h-96 w-full bg-slate-900/10 rounded-[40px] animate-pulse" />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="h-96 bg-white/75 rounded-[40px] animate-pulse" />
+        <div className="h-40 bg-white/75 rounded-[40px] animate-pulse" />
+        <div className="h-40 bg-white/75 rounded-[40px] animate-pulse" />
+      </div>
+    </div>
+  </div>
 );
 
 
@@ -342,110 +371,116 @@ export default function GoogleWeatherApp() {
           )}
         </AnimatePresence>
 
-        <section className="flex flex-col items-center text-center py-6 md:py-10 relative">
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="flex items-center gap-3 mb-6 px-8 py-3 bg-white/70 backdrop-blur-md rounded-full border border-white/40 shadow-md"
-          >
-            <RiMapPin2Line className="text-[#0b57d0] text-lg" />
-            <h1 className="text-lg font-black text-[#1f1f1f] tracking-tight">{weather?.location || city}</h1>
-          </motion.div>
+        {loading ? (
+          <MainSkeleton />
+        ) : (
+          <>
+            <section className="flex flex-col items-center text-center py-6 md:py-10 relative">
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                className="flex items-center gap-3 mb-6 px-8 py-3 bg-white/70 backdrop-blur-md rounded-full border border-white/40 shadow-md"
+              >
+                <RiMapPin2Line className="text-[#0b57d0] text-lg" />
+                <h1 className="text-lg font-black text-[#1f1f1f] tracking-tight">{weather?.location || city}</h1>
+              </motion.div>
 
-          <div className="flex flex-col items-center relative">
-            <motion.div
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              className="text-[80px] md:text-[110px] font-black tracking-tighter leading-none text-[#1f1f1f] mb-4 flex items-start -ml-4 drop-shadow-xl"
-            >
-              {weather?.temp || '--'}<span className="text-4xl md:text-5xl mt-4 md:mt-6 font-bold text-[#0b57d0]">°</span>
-            </motion.div>
-            <div className="flex flex-col items-center gap-2 mb-6 md:mb-8">
-              <span className="text-4xl font-black text-[#1f1f1f] capitalize tracking-tighter">{weather?.description}</span>
-              <p className="text-lg font-bold text-[#5f6368] bg-white/50 px-6 py-2 rounded-full border border-white/30 shadow-sm">
-                H:{weather?.tempMax}° L:{weather?.tempMin}° • Feels like {weather?.feelsLike}°
-              </p>
-            </div>
-            <div className="relative group scale-100 md:scale-110">
-              <div className="absolute inset-0 bg-[#0b57d0]/20 blur-[80px] rounded-full group-hover:bg-[#0b57d0]/30 transition-all" />
-              <AnimatedWeatherIcon condition={weather?.mainCondition} className="w-40 h-40 md:w-48 md:h-48 relative z-10" />
-            </div>
-          </div>
-        </section>
-
-        {/* 📊 Hourly Forecast (Horizontal Scroll) */}
-        <BentoCard className="overflow-hidden">
-          <div className="flex items-center gap-2 text-[#444746] mb-4">
-            <RiDashboardLine className="text-lg" />
-            <span className="text-xs font-medium uppercase tracking-wider">Hourly forecast</span>
-          </div>
-          <HourlyForecast items={weather?.hourly} />
-        </BentoCard>
-
-        {/* 🛰️ Satellite Surveillance Map - Primary Tactical View */}
-        <div id="weather-map" className="-mx-4 md:mx-0 mb-6 scroll-mt-24">
-          <div className="bg-slate-900 md:rounded-[40px] overflow-hidden border-y md:border border-white/10 shadow-2xl relative h-[450px] md:h-[500px]">
-            <div className="absolute top-6 left-6 z-10 flex flex-col gap-1 pointer-events-none">
-              <div className="flex items-center gap-2 px-3 py-1 bg-black/60 backdrop-blur-md rounded-full border border-white/10">
-                <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
-                <span className="text-[10px] font-black text-white uppercase tracking-widest">Satellite_Live</span>
+              <div className="flex flex-col items-center relative">
+                <motion.div
+                  initial={{ y: 20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  className="text-[80px] md:text-[110px] font-black tracking-tighter leading-none text-[#1f1f1f] mb-4 flex items-start -ml-4 drop-shadow-xl"
+                >
+                  {weather?.temp || '--'}<span className="text-4xl md:text-5xl mt-4 md:mt-6 font-bold text-[#0b57d0]">°</span>
+                </motion.div>
+                <div className="flex flex-col items-center gap-2 mb-6 md:mb-8">
+                  <span className="text-4xl font-black text-[#1f1f1f] capitalize tracking-tighter">{weather?.description}</span>
+                  <p className="text-lg font-bold text-[#5f6368] bg-white/50 px-6 py-2 rounded-full border border-white/30 shadow-sm">
+                    H:{weather?.tempMax}° L:{weather?.tempMin}° • Feels like {weather?.feelsLike}°
+                  </p>
+                </div>
+                <div className="relative group scale-100 md:scale-110">
+                  <div className="absolute inset-0 bg-[#0b57d0]/20 blur-[80px] rounded-full group-hover:bg-[#0b57d0]/30 transition-all" />
+                  <AnimatedWeatherIcon condition={weather?.mainCondition} className="w-40 h-40 md:w-48 md:h-48 relative z-10" />
+                </div>
               </div>
-              <h3 className="text-lg font-black text-white tracking-tight drop-shadow-lg">Surveillance Radar</h3>
+            </section>
+
+            {/* 📊 Hourly Forecast (Horizontal Scroll) */}
+            <BentoCard className="overflow-hidden">
+              <div className="flex items-center gap-2 text-[#444746] mb-4">
+                <RiDashboardLine className="text-lg" />
+                <span className="text-xs font-medium uppercase tracking-wider">Hourly forecast</span>
+              </div>
+              <HourlyForecast items={weather?.hourly} timezone={weather?.timezone} />
+            </BentoCard>
+
+            {/* 🛰️ Satellite Surveillance Map - Primary Tactical View */}
+            <div id="weather-map" className="-mx-4 md:mx-0 mb-6 scroll-mt-24">
+              <div className="bg-slate-900 md:rounded-[40px] overflow-hidden border-y md:border border-white/10 shadow-2xl relative h-[450px] md:h-[500px]">
+                <div className="absolute top-6 left-6 z-10 flex flex-col gap-1 pointer-events-none">
+                  <div className="flex items-center gap-2 px-3 py-1 bg-black/60 backdrop-blur-md rounded-full border border-white/10">
+                    <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
+                    <span className="text-[10px] font-black text-white uppercase tracking-widest">Satellite_Live</span>
+                  </div>
+                  <h3 className="text-lg font-black text-white tracking-tight drop-shadow-lg">Surveillance Radar</h3>
+                </div>
+                <InteractiveMap
+                  lat={weather?.lat}
+                  lon={weather?.lon}
+                  city={weather?.location}
+                />
+              </div>
             </div>
-            <InteractiveMap
-              lat={weather?.lat}
-              lon={weather?.lon}
-              city={weather?.location}
-            />
-          </div>
-        </div>
 
-        {/* 🍱 Bento Grid Layout (Mobile Optimized) */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* 🍱 Bento Grid Layout (Mobile Optimized) */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-          {/* 10-Day Forecast */}
-          <BentoCard className="md:row-span-2">
-            <ExtendedForecast days={weather?.forecast} />
-          </BentoCard>
+              {/* 10-Day Forecast */}
+              <BentoCard className="md:row-span-2">
+                <ExtendedForecast days={weather?.forecast} />
+              </BentoCard>
 
-          {/* AQI Meter */}
-          <BentoCard title="AQI" icon={RiDashboardLine}>
-            <AQIMeter aqi={weather?.aqi || 1} />
-          </BentoCard>
+              {/* AQI Meter */}
+              <BentoCard title="AQI" icon={RiDashboardLine}>
+                <AQIMeter aqi={weather?.aqi || 1} />
+              </BentoCard>
 
-          <TacticalMetrics weather={weather} />
+              <TacticalMetrics weather={weather} />
 
-          {/* Wind Orientation Compass - Full Width Tactical View */}
-          <BentoCard title="Wind Orientation" icon={RiCompass3Line} className="md:col-span-2">
-            <WindCompass deg={weather?.windDeg} speed={weather?.windSpeed} />
-          </BentoCard>
-        </div>
+              {/* Wind Orientation Compass - Full Width Tactical View */}
+              <BentoCard title="Wind Orientation" icon={RiCompass3Line} className="md:col-span-2">
+                <WindCompass deg={weather?.windDeg} speed={weather?.windSpeed} />
+              </BentoCard>
+            </div>
 
-        <div id="solar-telemetry" className="grid grid-cols-1 gap-4 scroll-mt-24">
-          <BentoCard title="Sunrise & Sunset" icon={RiSunLine} className="md:col-span-1">
-            <SolarPath 
-              sunrise={weather?.sunrise} 
-              sunset={weather?.sunset}
-              rawSunrise={weather?.rawSunrise}
-              rawSunset={weather?.rawSunset}
-              dt={weather?.dt}
-              timezone={weather?.timezone}
-            />
-          </BentoCard>
+            <div id="solar-telemetry" className="grid grid-cols-1 gap-4 scroll-mt-24">
+              <BentoCard title="Sunrise & Sunset" icon={RiSunLine} className="md:col-span-1">
+                <SolarPath 
+                  sunrise={weather?.sunrise} 
+                  sunset={weather?.sunset}
+                  rawSunrise={weather?.rawSunrise}
+                  rawSunset={weather?.rawSunset}
+                  dt={weather?.dt}
+                  timezone={weather?.timezone}
+                />
+              </BentoCard>
 
-          <BentoCard title="Climate Analytics" icon={RiCompass3Line}>
-            <ClimateAnalytics
-              currentTemp={weather?.temp}
-              feelsLike={weather?.feelsLike}
-              humidity={weather?.humidity}
-              condition={weather?.description || weather?.mainCondition}
-            />
-          </BentoCard>
+              <BentoCard title="Climate Analytics" icon={RiCompass3Line}>
+                <ClimateAnalytics
+                  currentTemp={weather?.temp}
+                  feelsLike={weather?.feelsLike}
+                  humidity={weather?.humidity}
+                  condition={weather?.description || weather?.mainCondition}
+                />
+              </BentoCard>
 
-          <BentoCard title="Barometric Pressure" icon={RiDashboardLine}>
-            <PressureGauge pressure={weather?.pressure} />
-          </BentoCard>
-        </div>
+              <BentoCard title="Barometric Pressure" icon={RiDashboardLine}>
+                <PressureGauge pressure={weather?.pressure} />
+              </BentoCard>
+            </div>
+          </>
+        )}
       </motion.div>
 
       <footer className="w-full py-8 border-t border-slate-200/50 relative z-20 mt-12 bg-white/30 backdrop-blur-sm">

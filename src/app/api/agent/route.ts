@@ -86,7 +86,7 @@ export async function GET(request: Request) {
     
     // Process hourly forecast (next 12 hours)
     const hourlyForecast = forecastList.slice(0, 12).map((h: any) => ({
-      time: new Date(h.dt * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      dt: h.dt,
       temp: Math.round(h.main?.temp || 0),
       description: h.weather?.[0]?.description || 'Clear',
       humidity: h.main?.humidity || 0,
