@@ -5,6 +5,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { motion, AnimatePresence } from 'framer-motion';
+import { RiCloseLine } from 'react-icons/ri';
 
 // Fix Leaflet icon issue
 const DefaultIcon = L.icon({
@@ -167,14 +168,22 @@ export const InteractiveMap: React.FC<{ lat: number; lon: number; city: string }
       <AnimatePresence>
         {activeLayer && (
           <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 20 }}
-            className="absolute bottom-8 right-8 z-[1001] bg-black/70 backdrop-blur-2xl border border-white/10 p-6 rounded-3xl shadow-2xl min-w-[180px]"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            className="absolute bottom-4 right-4 z-[1001] bg-black/80 backdrop-blur-xl border border-white/10 p-4 rounded-2xl shadow-2xl min-w-[150px]"
           >
-            <div className="text-[9px] font-black uppercase tracking-[0.2em] text-cyan-400/60 mb-4 flex items-center gap-2">
-              <div className="w-1 h-1 bg-cyan-400 rounded-full animate-pulse" />
-              Sensor_Readout
+            <div className="flex items-center justify-between mb-3">
+              <div className="text-[8px] font-black uppercase tracking-[0.2em] text-cyan-400/60 flex items-center gap-2">
+                <div className="w-1 h-1 bg-cyan-400 rounded-full animate-pulse" />
+                Sensor_Readout
+              </div>
+              <button 
+                onClick={() => setActiveLayer(null)}
+                className="text-white/40 hover:text-white transition-colors"
+              >
+                <RiCloseLine className="text-xs" />
+              </button>
             </div>
             <div className="flex flex-col gap-3">
               {activeLayer === 'temp' && (
@@ -203,7 +212,7 @@ export const InteractiveMap: React.FC<{ lat: number; lon: number; city: string }
                 </>
               )}
             </div>
-            <div className="mt-6 pt-3 border-t border-white/5 flex justify-between items-center text-[8px] font-mono text-cyan-400/40 tracking-tighter">
+            <div className="mt-4 pt-2 border-t border-white/5 flex justify-between items-center text-[7px] font-mono text-cyan-400/40 tracking-tighter">
               <span className="flex items-center gap-1"><div className="w-1 h-1 bg-green-500 rounded-full" /> LIVE</span>
               <span>UTC+{new Date().getTimezoneOffset() / -60}:00</span>
             </div>

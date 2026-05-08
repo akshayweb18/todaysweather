@@ -122,10 +122,11 @@ const WeatherAtmosphere = ({ condition }: { condition: string }) => {
 export default function GoogleWeatherApp() {
   const [weather, setWeather] = useState<any>(null);
   const [loading, setLoading] = useState(false);
-  const [city, setCity] = useState('Navi Mumbai');
+  const [city, setCity] = useState('');
   const [error, setError] = useState('');
   const [mounted, setMounted] = useState(false);
   const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [isFocused, setIsFocused] = useState(false);
   const [geoLoading, setGeoLoading] = useState(false);
 
   const fetchSuggestions = async (q: string) => {
@@ -272,6 +273,8 @@ export default function GoogleWeatherApp() {
               type="text"
               value={city}
               onChange={handleInputChange}
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => setTimeout(() => setIsFocused(false), 200)}
               onKeyDown={(e) => e.key === 'Enter' && fetchWeather()}
               placeholder="Search city"
               className="bg-transparent border-none outline-none flex-1 min-w-0 text-sm font-medium text-[#1f1f1f] placeholder:text-[#444746]"
@@ -323,7 +326,7 @@ export default function GoogleWeatherApp() {
 
             {/* Suggestions Dropdown */}
             <AnimatePresence>
-              {suggestions.length > 0 && (
+              {isFocused && suggestions.length > 0 && (
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -437,21 +440,23 @@ export default function GoogleWeatherApp() {
           <HourlyForecast items={weather?.hourly} />
         </BentoCard>
 
-        {/* 🛰️ Satellite Map Focus: Now a primary focal point */}
-        <BentoCard title="Satellite Surveillance Map" icon={RiMapPin2Line} className="h-[450px] shadow-md border-blue-100">
-          <div className="h-full rounded-2xl overflow-hidden relative group">
-            <InteractiveMap
-              key={weather?.location}
-              lat={weather?.lat}
-              lon={weather?.lon}
-              city={weather?.location}
+        {/* 🛰️ Satellite Surveillance Map - Primary Tactical View */}
+        <div id="weather-map" className="-mx-4 md:mx-0 mb-6 scroll-mt-24">
+          <div className="bg-slate-900 md:rounded-[40px] overflow-hidden border-y md:border border-white/10 shadow-2xl relative h-[450px] md:h-[500px]">
+             <div className="absolute top-6 left-6 z-10 flex flex-col gap-1 pointer-events-none">
+                <div className="flex items-center gap-2 px-3 py-1 bg-black/60 backdrop-blur-md rounded-full border border-white/10">
+                   <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
+                   <span className="text-[10px] font-black text-white uppercase tracking-widest">Satellite_Live</span>
+                </div>
+                <h3 className="text-lg font-black text-white tracking-tight drop-shadow-lg">Surveillance Radar</h3>
+             </div>
+             <InteractiveMap 
+              lat={weather?.lat} 
+              lon={weather?.lon} 
+              city={weather?.location} 
             />
-            <div className="absolute top-4 right-4 z-[1000] bg-white/90 backdrop-blur-md px-4 py-2 rounded-full text-[8px] font-black uppercase tracking-[0.2em] border border-blue-50 shadow-sm flex items-center gap-2">
-              <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
-              Neural_Link: Active
-            </div>
           </div>
-        </BentoCard>
+        </div>
 
         {/* 🍱 Bento Grid Layout (Mobile Optimized) */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -469,8 +474,11 @@ export default function GoogleWeatherApp() {
           <TacticalMetrics weather={weather} />
         </div>
 
-        {/* 🗺️ Map & Solar */}
-        <div className="grid grid-cols-1 gap-4">
+
+
+
+
+        <div id="solar-telemetry" className="grid grid-cols-1 gap-4 scroll-mt-24">
           <BentoCard title="Sunrise & Sunset" icon={RiSunLine} className="md:col-span-1">
             <SolarPath sunrise={weather?.sunrise} sunset={weather?.sunset} />
           </BentoCard>
@@ -499,10 +507,28 @@ export default function GoogleWeatherApp() {
             </p>
           </div>
 
-          <div className="flex items-center gap-4 opacity-30 hover:opacity-100 transition-opacity">
-            <RiDashboardLine className="text-lg text-slate-400" />
-            <RiCompass3Line className="text-lg text-slate-400" />
-            <RiSunLine className="text-lg text-slate-400" />
+          <div className="flex items-center gap-6">
+            <button
+              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+              className="p-3 hover:bg-slate-100 rounded-full transition-all text-slate-400 hover:text-[#0b57d0] group"
+              title="Return to Dashboard"
+            >
+              <RiDashboardLine className="text-xl group-hover:scale-110 transition-transform" />
+            </button>
+            <button
+              onClick={() => document.getElementById('weather-map')?.scrollIntoView({ behavior: 'smooth' })}
+              className="p-3 hover:bg-slate-100 rounded-full transition-all text-slate-400 hover:text-[#0b57d0] group"
+              title="Open Satellite Surveillance"
+            >
+              <RiCompass3Line className="text-xl group-hover:scale-110 transition-transform" />
+            </button>
+            <button
+              onClick={() => document.getElementById('solar-telemetry')?.scrollIntoView({ behavior: 'smooth' })}
+              className="p-3 hover:bg-slate-100 rounded-full transition-all text-slate-400 hover:text-[#0b57d0] group"
+              title="Solar Status"
+            >
+              <RiSunLine className="text-xl group-hover:scale-110 transition-transform" />
+            </button>
           </div>
         </footer>
       </div>
