@@ -8,7 +8,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const q = searchParams.get('q');
 
-    if (!q || q.length < 3) {
+    if (!q || q.length < 2) {
       return NextResponse.json({ success: true, data: [] });
     }
 

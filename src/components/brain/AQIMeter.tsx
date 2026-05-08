@@ -2,42 +2,48 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
+import { RiShieldCheckLine, RiInformationLine, RiLeafLine } from 'react-icons/ri';
 
 const AQI_LEVELS = [
   {
     label: 'Good',
-    color: '#10b981',
-    description: 'Air is clean for most people.',
-    impact: 'Low risk',
-    recommendation: 'Outdoor activity is fine.'
+    color: '#00e400',
+    bg: '#e6fce6',
+    text: '#007a00',
+    description: 'Air quality is satisfactory and poses little or no risk.',
+    advice: 'Enjoy your outdoor activities.'
   },
   {
     label: 'Fair',
-    color: '#f59e0b',
-    description: 'Air is acceptable, minor discomfort possible.',
-    impact: 'Mild risk for sensitive groups',
-    recommendation: 'If sensitive, reduce long outdoor exposure.'
+    color: '#ffff00',
+    bg: '#ffffcc',
+    text: '#808000',
+    description: 'Acceptable quality; sensitive people should limit prolonged exposure.',
+    advice: 'Sensitive groups should reduce effort.'
   },
   {
     label: 'Moderate',
-    color: '#f97316',
-    description: 'Air can irritate sensitive people.',
-    impact: 'Noticeable risk',
-    recommendation: 'Avoid heavy exercise outdoors.'
+    color: '#ff7e00',
+    bg: '#fff2e6',
+    text: '#b35900',
+    description: 'General public not likely to be affected; sensitive groups may feel it.',
+    advice: 'Limit heavy outdoor exercise.'
   },
   {
     label: 'Poor',
-    color: '#ef4444',
-    description: 'Air quality is unhealthy for many people.',
-    impact: 'High risk',
-    recommendation: 'Limit outdoor time. Consider a mask.'
+    color: '#ff0000',
+    bg: '#ffe6e6',
+    text: '#b30000',
+    description: 'Everyone may begin to experience health effects.',
+    advice: 'Avoid long outdoor exposure.'
   },
   {
     label: 'Very Poor',
-    color: '#7f1d1d',
-    description: 'Serious health concern for everyone.',
-    impact: 'Very high risk',
-    recommendation: 'Stay indoors and use air filtration if possible.'
+    color: '#8f3f97',
+    bg: '#f4e6f5',
+    text: '#632c69',
+    description: 'Health warnings of emergency conditions.',
+    advice: 'Stay indoors as much as possible.'
   },
 ];
 
@@ -46,59 +52,88 @@ export const AQIMeter: React.FC<{ aqi: number }> = ({ aqi }) => {
   const level = AQI_LEVELS[safeAqi - 1] || AQI_LEVELS[0];
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
-        <span className="text-xs font-bold uppercase tracking-widest text-indigo-400">Air Quality Index</span>
-        <div className="px-3 py-1 rounded-full text-[8px] font-bold uppercase tracking-widest border border-white/10 bg-white/5">
-          Real-time
+    <div className="flex flex-col gap-6 w-full">
+      {/* 🏷️ Header */}
+      <div className="flex items-center justify-between px-1">
+        <div className="flex items-center gap-2">
+          <RiLeafLine className="text-[#0b57d0]" />
+          <span className="text-xs font-bold uppercase tracking-wider text-[#5f6368]">Air Quality</span>
+        </div>
+        <span className="text-[10px] font-bold text-[#0b57d0] bg-[#e8f0fe] px-2 py-0.5 rounded-full uppercase">Real-Time Data</span>
+      </div>
+
+      {/* 📊 Visual Gauge Row */}
+      <div className="flex items-center gap-6">
+        <div className="relative w-20 h-20 shrink-0">
+          <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
+            <circle
+              cx="50" cy="50" r="40"
+              stroke="#f0f0f0" strokeWidth="12" fill="none"
+            />
+            <motion.circle
+              cx="50" cy="50" r="40"
+              stroke={level.color} strokeWidth="12" fill="none"
+              strokeDasharray="251.2"
+              initial={{ strokeDashoffset: 251.2 }}
+              animate={{ strokeDashoffset: 251.2 - (251.2 * safeAqi) / 5 }}
+              transition={{ duration: 1, ease: "easeOut" }}
+              strokeLinecap="round"
+            />
+          </svg>
+          <div className="absolute inset-0 flex flex-col items-center justify-center">
+            <span className="text-2xl font-bold text-[#1f1f1f] leading-none">{safeAqi}</span>
+            <span className="text-[8px] font-bold text-[#5f6368] uppercase">AQI</span>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-1">
+          <span 
+            className="text-2xl font-bold tracking-tight"
+            style={{ color: level.text }}
+          >
+            {level.label}
+          </span>
+          <div 
+            className="px-3 py-1 rounded-lg text-[10px] font-bold uppercase w-fit tracking-wide"
+            style={{ backgroundColor: level.bg, color: level.text }}
+          >
+            Level {safeAqi} of 5
+          </div>
         </div>
       </div>
 
-      <div className="relative h-2 bg-white/5 rounded-full overflow-hidden">
-        <motion.div
-          initial={{ width: 0 }}
-          animate={{ width: `${(safeAqi / 5) * 100}%` }}
-          className="h-full"
-          style={{ backgroundColor: level.color }}
-        />
-      </div>
-
-      <div className="flex justify-between items-end">
-        <div>
-          <div className="text-4xl font-bold text-white mb-1 tracking-tighter">
-            {level.label}
+      {/* 📝 Detailed Insight */}
+      <div className="bg-[#f8f9fa] rounded-2xl p-4 border border-[#f1f3f4] space-y-3">
+        <div className="flex items-start gap-3">
+          <div className="p-2 bg-white rounded-full shadow-sm">
+            <RiInformationLine className="text-[#0b57d0]" />
           </div>
-          <p className="text-[10px] text-slate-400 font-medium">
+          <p className="text-xs font-medium text-[#1f1f1f] leading-relaxed">
             {level.description}
           </p>
-          <p className="text-[10px] text-slate-500 mt-2">
-            <span className="text-slate-300 font-semibold">Risk:</span> {level.impact}
-          </p>
-          <p className="text-[10px] text-cyan-300/80 mt-1">
-            <span className="font-semibold">Do now:</span> {level.recommendation}
-          </p>
         </div>
-        <div className="text-right">
-          <div className="text-xs font-mono text-slate-700 uppercase mb-1">Index</div>
-          <div className="text-2xl font-bold text-white tabular-nums">{safeAqi}<span className="text-xs opacity-30 ml-1">/5</span></div>
+        
+        <div className="flex flex-col gap-3 py-2 border-t border-white/50">
+          <div className="flex items-center gap-2">
+            <RiShieldCheckLine className="text-[#0b57d0] text-sm shrink-0" />
+            <span className="text-[11px] font-bold text-[#0b57d0] uppercase tracking-wider">Health Advice</span>
+          </div>
+          <p className="text-[11px] font-medium text-[#0b57d0] leading-normal flex-wrap break-words">
+            {level.advice}
+          </p>
         </div>
       </div>
 
-      <div className="grid grid-cols-5 gap-2 text-center">
+      {/* 📏 Comparative Scale */}
+      <div className="grid grid-cols-5 gap-1.5 px-1">
         {AQI_LEVELS.map((item, index) => (
-          <div key={item.label} className="flex flex-col items-center gap-1">
-            <div
-              className="w-full h-1.5 rounded-full"
-              style={{ backgroundColor: item.color, opacity: safeAqi === index + 1 ? 1 : 0.35 }}
-            />
-            <span className="text-[8px] text-slate-500 font-mono">{index + 1}</span>
-          </div>
+          <div 
+            key={index} 
+            className={`h-1.5 rounded-full transition-all duration-500 ${safeAqi === index + 1 ? 'scale-y-150' : 'opacity-20'}`}
+            style={{ backgroundColor: item.color }}
+          />
         ))}
       </div>
-
-      <p className="text-[9px] text-slate-500">
-        Scale note: this widget uses the OpenWeather AQI scale <span className="text-slate-300">1 to 5</span> (not 0 to 500).
-      </p>
     </div>
   );
 };

@@ -17,11 +17,18 @@ import {
   RiMenuLine,
   RiMore2Line,
   RiSettings4Line,
-  RiNavigationLine
+  RiNavigationLine,
+  RiCloseLine
 } from 'react-icons/ri';
 import { AQIMeter } from '@/components/brain/AQIMeter';
 import { ExtendedForecast } from '@/components/brain/ExtendedForecast';
 import { HourlyForecast } from '@/components/timeline/HourlyForecast';
+import { ProactiveAlert } from '@/components/alerts/ProactiveAlert';
+import { IntelligenceFeed } from '@/components/brain/IntelligenceFeed';
+import { AnimatedWeatherIcon } from '@/components/brain/AnimatedWeatherIcon';
+import { ClimateAnalytics } from '@/components/brain/ClimateAnalytics';
+import { TacticalMetrics } from '@/components/brain/TacticalMetrics';
+import { SolarPath } from '@/components/brain/SolarPath';
 
 const InteractiveMap = dynamic(
   () => import('@/components/brain/InteractiveMap').then(mod => mod.InteractiveMap),
@@ -29,15 +36,18 @@ const InteractiveMap = dynamic(
 );
 
 const BentoCard = ({ title, icon: Icon, children, className }: any) => (
-  <div className={`google-bento p-6 flex flex-col gap-4 ${className}`}>
+  <motion.div 
+    whileHover={{ y: -4 }}
+    className={`bg-white/75 backdrop-blur-2xl p-8 flex flex-col gap-6 rounded-[40px] border border-white/60 shadow-[0_12px_40px_rgba(0,0,0,0.06)] ${className}`}
+  >
     {title && (
-      <div className="flex items-center gap-2 text-[#444746]">
-        <Icon className="text-lg" />
-        <span className="text-xs font-medium uppercase tracking-wider">{title}</span>
+      <div className="flex items-center gap-3 text-[#444746]">
+        <Icon className="text-2xl" />
+        <span className="text-sm font-bold uppercase tracking-[0.15em]">{title}</span>
       </div>
     )}
     {children}
-  </div>
+  </motion.div>
 );
 
 const WeatherAtmosphere = ({ condition }: { condition: string }) => {
@@ -118,7 +128,7 @@ export default function GoogleWeatherApp() {
   const [geoLoading, setGeoLoading] = useState(false);
 
   const fetchSuggestions = async (q: string) => {
-    if (!q || q.length < 3) {
+    if (!q || q.length < 2) {
       setSuggestions([]);
       return;
     }
@@ -139,11 +149,27 @@ export default function GoogleWeatherApp() {
     }
   };
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (city.trim().length >= 2) {
+        fetchSuggestions(city);
+      } else {
+        setSuggestions([]);
+      }
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [city]);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value;
-    setCity(val);
-    fetchSuggestions(val);
+    setCity(e.target.value);
   };
+
+  // Close suggestions when clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => setSuggestions([]);
+    window.addEventListener('click', handleClickOutside);
+    return () => window.removeEventListener('click', handleClickOutside);
+  }, []);
 
   const selectSuggestion = (fullName: string) => {
     setCity(fullName);
@@ -152,6 +178,11 @@ export default function GoogleWeatherApp() {
   };
 
   const fetchWeather = async (searchCity: string = city, lat?: number, lon?: number) => {
+    if (!searchCity && (lat === undefined || lon === undefined)) {
+      console.warn("Attempted to fetch weather with no city or coordinates.");
+      return;
+    }
+
     setLoading(true);
     setError('');
     try {
@@ -167,14 +198,13 @@ export default function GoogleWeatherApp() {
       }
       const data = await res.json();
       if (data.success) {
-        console.log("Fetched Data for:", data.data.location, data.data.lat, data.data.lon);
         setWeather(data.data);
       } else {
-        setError(data.error || 'Unable to fetch weather data.');
+        setError(data.error || 'City not found. Please try a different location.');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      setError('Weather service temporarily unavailable. Please try again.');
+      setError(err.message || 'Weather service temporarily unavailable.');
     } finally {
       setLoading(false);
     }
@@ -208,7 +238,10 @@ export default function GoogleWeatherApp() {
   if (!mounted) return null;
 
   return (
-    <main className={`min-h-screen ${theme} transition-colors duration-1000 pb-10 px-4 md:px-8 relative overflow-hidden`}>
+    <main className={`min-h-screen ${theme} transition-all duration-1000 pb-10 px-4 md:px-8 relative overflow-hidden`}>
+      {/* 🌌 Cosmic Background Layer */}
+      <div className="fixed inset-0 bg-gradient-to-br from-white via-[#f0f4f9] to-[#e8f0fe] -z-20" />
+      <div className="fixed inset-0 opacity-30 pointer-events-none -z-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]" />
       {/* 🌪️ Atmospheric Layer */}
       <WeatherAtmosphere condition={weather?.mainCondition} />
 
@@ -216,7 +249,10 @@ export default function GoogleWeatherApp() {
 
         {/* 🔍 Google Style Search Bar */}
         <header className="flex flex-col md:flex-row items-center gap-4 w-full relative">
-          <div className="flex-1 flex items-center flex-nowrap gap-2 bg-white/80 backdrop-blur-md px-3 md:px-6 py-3 rounded-full shadow-sm border border-[#f0f0f0] w-full relative overflow-hidden">
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="flex-1 flex items-center flex-nowrap gap-2 bg-white/80 backdrop-blur-md px-3 md:px-6 py-3 rounded-full shadow-sm border border-[#f0f0f0] w-full relative"
+          >
             <div className="relative">
               <RiSearchLine className="text-[#444746] text-lg md:text-xl shrink-0" />
               {geoLoading && (
@@ -231,6 +267,18 @@ export default function GoogleWeatherApp() {
               placeholder="Search city"
               className="bg-transparent border-none outline-none flex-1 min-w-0 text-sm font-medium text-[#1f1f1f] placeholder:text-[#444746]"
             />
+            {city && (
+              <button
+                onClick={() => {
+                  setCity('');
+                  setSuggestions([]);
+                }}
+                className="p-1 hover:bg-[#f0f4f9] rounded-full text-[#444746] transition-colors shrink-0"
+                title="Clear Search"
+              >
+                <RiCloseLine className="text-xl" />
+              </button>
+            )}
             <div className="flex items-center gap-1 md:gap-2 w-auto justify-end shrink-0">
               <button
                 onClick={() => {
@@ -263,6 +311,7 @@ export default function GoogleWeatherApp() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 10 }}
+                  onClick={(e) => e.stopPropagation()}
                   className="absolute top-full left-0 right-0 mt-4 bg-white rounded-3xl shadow-xl border border-[#f0f0f0] overflow-hidden z-[200]"
                 >
                   {suggestions.map((s, i) => (
@@ -293,26 +342,54 @@ export default function GoogleWeatherApp() {
           </div>
         </header>
 
-        {/* 📍 Location & Current Weather Hero */}
-        <section className="flex flex-col items-center text-center py-8">
-          <div className="flex flex-col items-center gap-2 mb-6">
-            <h1 className="text-2xl font-medium text-[#1f1f1f]">{weather?.location || city}</h1>
-            <p className="text-sm text-[#444746]">
-              {mounted && new Date().toLocaleDateString([], { weekday: 'long', day: 'numeric', month: 'long' })}
-            </p>
-          </div>
+        {/* ⚠️ Error Feedback */}
+        <AnimatePresence>
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-red-50 border border-red-100 p-4 rounded-[24px] flex items-center gap-3 text-red-600 shadow-sm"
+            >
+              <div className="p-2 bg-white rounded-full text-red-500 shadow-sm">
+                <RiCloseLine className="text-xl" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs font-bold uppercase tracking-wider">Search Failure</span>
+                <p className="text-sm font-medium">{error}</p>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-          <div className="flex flex-col items-center">
-            <div className="text-[100px] font-medium leading-none google-temp mb-4 flex items-start">
-              {weather?.temp || '--'}<span className="text-4xl mt-4">°</span>
+        <section className="flex flex-col items-center text-center py-16 relative">
+          <motion.div 
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="flex items-center gap-3 mb-6 px-8 py-3 bg-white/70 backdrop-blur-md rounded-full border border-white/40 shadow-md"
+          >
+            <RiMapPin2Line className="text-[#0b57d0] text-lg" />
+            <h1 className="text-lg font-black text-[#1f1f1f] tracking-tight">{weather?.location || city}</h1>
+          </motion.div>
+
+          <div className="flex flex-col items-center relative">
+            <motion.div 
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              className="text-[140px] font-black tracking-tighter leading-none text-[#1f1f1f] mb-4 flex items-start -ml-6 drop-shadow-xl"
+            >
+              {weather?.temp || '--'}<span className="text-6xl mt-8 font-bold text-[#0b57d0]">°</span>
+            </motion.div>
+            <div className="flex flex-col items-center gap-2 mb-12">
+              <span className="text-4xl font-black text-[#1f1f1f] capitalize tracking-tighter">{weather?.description}</span>
+              <p className="text-lg font-bold text-[#5f6368] bg-white/50 px-6 py-2 rounded-full border border-white/30 shadow-sm">
+                H:{weather?.tempMax}° L:{weather?.tempMin}° • Feels like {weather?.feelsLike}°
+              </p>
             </div>
-            <div className="flex items-center gap-2 mb-2">
-              <img src="/weather_icon.png" className="w-16 h-16 object-contain" alt="" />
-              <span className="text-xl font-medium text-[#1f1f1f] capitalize">{weather?.description}</span>
+            <div className="relative group scale-125">
+              <div className="absolute inset-0 bg-[#0b57d0]/20 blur-[100px] rounded-full group-hover:bg-[#0b57d0]/30 transition-all" />
+              <AnimatedWeatherIcon condition={weather?.mainCondition} className="w-56 h-56 relative z-10" />
             </div>
-            <p className="text-sm font-medium text-[#444746]">
-              H:{weather?.tempMax}° L:{weather?.tempMin}° • Feels like {weather?.feelsLike}°
-            </p>
           </div>
         </section>
 
@@ -322,7 +399,7 @@ export default function GoogleWeatherApp() {
             <RiDashboardLine className="text-lg" />
             <span className="text-xs font-medium uppercase tracking-wider">Hourly forecast</span>
           </div>
-          <HourlyForecast temp={weather?.temp} />
+          <HourlyForecast items={weather?.hourly} />
         </BentoCard>
 
         {/* 🛰️ Satellite Map Focus: Now a primary focal point */}
@@ -354,48 +431,28 @@ export default function GoogleWeatherApp() {
             <AQIMeter aqi={weather?.aqi || 1} />
           </BentoCard>
 
-          {/* Metrics Grid (2x2 inside) */}
-          <div className="grid grid-cols-2 gap-4">
-            <BentoCard title="Wind" icon={RiWindyLine}>
-              <div className="text-2xl font-medium">{weather?.windSpeed} <span className="text-sm font-normal text-[#444746]">km/h</span></div>
-              <div className="text-xs text-[#444746]">Wind direction: {weather?.windDeg}°</div>
-            </BentoCard>
-            <BentoCard title="Humidity" icon={RiWaterPercentLine}>
-              <div className="text-2xl font-medium">{weather?.humidity}%</div>
-              <div className="text-xs text-[#444746]">Dew point: 12°</div>
-            </BentoCard>
-            <BentoCard title="UV Index" icon={RiSunFoggyLine}>
-              <div className="text-2xl font-medium">4.5</div>
-              <div className="text-xs text-[#444746]">Moderate</div>
-            </BentoCard>
-            <BentoCard title="Visibility" icon={RiCompass3Line}>
-              <div className="text-2xl font-medium">{weather?.visibility} <span className="text-sm font-normal text-[#444746]">km</span></div>
-              <div className="text-xs text-[#444746]">Clear sky</div>
-            </BentoCard>
-          </div>
+          <TacticalMetrics weather={weather} />
         </div>
 
         {/* 🗺️ Map & Solar */}
         <div className="grid grid-cols-1 gap-4">
-          <BentoCard title="Sunrise & Sunset" icon={RiSunLine}>
-            <div className="flex justify-between items-center px-4 py-8">
-              <div className="text-center flex-1">
-                <RiSunLine className="text-4xl text-orange-400 mb-2 mx-auto" />
-                <div className="text-2xl font-medium">{weather?.sunrise}</div>
-                <div className="text-[10px] text-[#444746] uppercase tracking-widest font-bold">Sunrise</div>
-              </div>
-              <div className="w-px h-16 bg-[#f0f0f0]" />
-              <div className="text-center flex-1">
-                <RiMoonLine className="text-4xl text-blue-400 mb-2 mx-auto" />
-                <div className="text-2xl font-medium">{weather?.sunset}</div>
-                <div className="text-[10px] text-[#444746] uppercase tracking-widest font-bold">Sunset</div>
-              </div>
-            </div>
+          <BentoCard title="Sunrise & Sunset" icon={RiSunLine} className="md:col-span-1">
+            <SolarPath sunrise={weather?.sunrise} sunset={weather?.sunset} />
+          </BentoCard>
+
+          <BentoCard title="Climate Analytics" icon={RiCompass3Line}>
+            <ClimateAnalytics 
+              currentTemp={weather?.temp}
+              feelsLike={weather?.feelsLike}
+              high={weather?.tempMax}
+              low={weather?.tempMin}
+              humidity={weather?.humidity}
+            />
           </BentoCard>
 
           <BentoCard title="Pressure" icon={RiCompass3Line}>
-            <div className="text-2xl font-medium">{weather?.pressure} <span className="text-sm font-normal text-[#444746]">hPa</span></div>
-            <div className="text-xs text-[#444746]">Atmospheric stability: Clear</div>
+            <div className="text-2xl font-medium text-[#1f1f1f]">{weather?.pressure} <span className="text-sm font-normal text-[#5f6368]">hPa</span></div>
+            <div className="text-xs text-[#5f6368]">Atmospheric load status</div>
           </BentoCard>
         </div>
 
