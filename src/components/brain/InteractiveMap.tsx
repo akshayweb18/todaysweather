@@ -76,7 +76,7 @@ export const InteractiveMap: React.FC<{ lat: number; lon: number; city: string }
             <div className="p-2 min-w-[120px]">
               <div className="text-[10px] font-black uppercase text-slate-500 mb-1">Target_Loc</div>
               <div className="text-xs font-bold text-slate-900">{city}</div>
-              <div className="text-[8px] font-mono text-cyan-600 mt-2">LAT: {lat.toFixed(4)} LON: {lon.toFixed(4)}</div>
+              <div className="text-[8px] font-mono text-cyan-600 mt-2">LAT: {lat?.toFixed(4) || '0.0000'} LON: {lon?.toFixed(4) || '0.0000'}</div>
             </div>
           </Popup>
         </Marker>

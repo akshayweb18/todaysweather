@@ -12,16 +12,20 @@ interface MetricProps {
   subValue?: string;
   color: string;
   animate?: any;
+  animateDuration?: number;
 }
 
-const MetricCard = ({ label, value, unit, icon: Icon, subValue, color, animate }: MetricProps) => (
+const MetricCard = ({ label, value, unit, icon: Icon, subValue, color, animate, animateDuration }: MetricProps) => (
   <motion.div 
     whileHover={{ scale: 1.02 }}
     className="bg-white/60 backdrop-blur-xl p-4 rounded-[28px] border border-white/60 shadow-sm flex flex-col gap-3 group transition-all"
   >
     <div className="flex items-center justify-between">
       <div className={`p-2 rounded-xl bg-${color}-50 text-${color}-500 group-hover:scale-110 transition-transform`}>
-        <motion.div animate={animate}>
+        <motion.div 
+          animate={animate}
+          transition={animateDuration ? { duration: animateDuration, repeat: Infinity, ease: "linear" } : {}}
+        >
           <Icon className="text-xl" />
         </motion.div>
       </div>
