@@ -15,25 +15,18 @@ export const AnimatedWeatherIcon: React.FC<AnimatedWeatherIconProps> = ({ condit
   if (c.includes('clear') || c.includes('sun')) {
     return (
       <div className={`relative ${className} flex items-center justify-center`}>
-        <motion.svg viewBox="0 0 100 100" className="w-full h-full">
-          <motion.circle
-            cx="50" cy="50" r="22"
-            fill="#FCD34D"
-            animate={{ scale: [1, 1.05, 1] }}
-            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+        <motion.div
+          animate={{ scale: [1, 1.05, 1], rotate: [0, 5, 0] }}
+          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+          className="w-full h-full flex items-center justify-center"
+        >
+          <img 
+            src="/icon/iconssun.png" 
+            alt="Sunny" 
+            className="w-[90%] h-[90%] object-contain drop-shadow-[0_0_15px_rgba(251,191,36,0.4)]"
           />
-          <motion.g animate={{ rotate: 360 }} transition={{ duration: 30, repeat: Infinity, ease: "linear" }}>
-            {[...Array(8)].map((_, i) => (
-              <rect
-                key={i}
-                x="47" y="10" width="6" height="15" rx="3"
-                fill="#FBBF24"
-                transform={`rotate(${i * 45} 50 50)`}
-              />
-            ))}
-          </motion.g>
-        </motion.svg>
-        <div className="absolute inset-0 bg-yellow-400/20 blur-2xl rounded-full -z-10" />
+        </motion.div>
+        <div className="absolute inset-0 bg-yellow-400/10 blur-3xl rounded-full -z-10" />
       </div>
     );
   }

@@ -7,7 +7,7 @@ interface WeatherAtmosphereProps {
   condition: string;
 }
 
-export const WeatherAtmosphere: React.FC<WeatherAtmosphereProps> = ({ condition = 'clear' }) => {
+const WeatherAtmosphereComponent: React.FC<WeatherAtmosphereProps> = ({ condition = 'clear' }) => {
   const c = condition.toLowerCase();
   const isRainy = c.includes('rain') || c.includes('drizzle') || c.includes('storm');
   const isCloudy = c.includes('cloud');
@@ -37,7 +37,7 @@ export const WeatherAtmosphere: React.FC<WeatherAtmosphereProps> = ({ condition 
                 delay: Math.random() * 2 
               }}
               className="absolute w-[1px] h-16 bg-gradient-to-t from-blue-400/40 via-white/20 to-transparent shadow-[0_0_8px_rgba(255,255,255,0.2)]"
-              style={{ transform: 'rotate(12deg)' }}
+              style={{ transform: 'rotate(12deg) translateZ(0)', willChange: 'transform' }}
             />
           ))}
         </div>
@@ -52,7 +52,8 @@ export const WeatherAtmosphere: React.FC<WeatherAtmosphereProps> = ({ condition 
             rotate: [0, 90, 180, 270, 360]
           }}
           transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-          className="absolute -top-60 -right-60 w-[800px] h-[800px] bg-yellow-400/10 rounded-full blur-[150px] shadow-[inset_0_0_100px_rgba(255,255,0,0.1)]"
+          className="absolute -top-60 -right-60 w-[800px] h-[800px] bg-yellow-400/10 rounded-full blur-[100px] shadow-[inset_0_0_100px_rgba(255,255,0,0.1)]"
+          style={{ willChange: 'transform, opacity', transform: 'translateZ(0)' }}
         />
       )}
 
@@ -70,7 +71,8 @@ export const WeatherAtmosphere: React.FC<WeatherAtmosphereProps> = ({ condition 
                 ease: "linear",
                 delay: i * -15
               }}
-              className="absolute w-[500px] h-64 bg-white/40 rounded-full blur-[120px] shadow-2xl"
+              className="absolute w-[400px] h-48 bg-white/30 rounded-full blur-[80px] shadow-2xl"
+              style={{ willChange: 'transform', transform: 'translateZ(0)' }}
             />
           ))}
         </div>
@@ -87,3 +89,5 @@ export const WeatherAtmosphere: React.FC<WeatherAtmosphereProps> = ({ condition 
     </div>
   );
 };
+
+export const WeatherAtmosphere = React.memo(WeatherAtmosphereComponent);
