@@ -9,8 +9,8 @@ interface PressureGaugeProps {
 }
 
 export const PressureGauge: React.FC<PressureGaugeProps> = ({ pressure = 1013 }) => {
-  const min = 960;
-  const max = 1060;
+  const min = 950;
+  const max = 1076; // Adjusted so (950+1076)/2 = 1013 (Exact Normal Center)
   const range = max - min;
   const progress = Math.max(0, Math.min(1, (pressure - min) / range));
   const rotation = (progress * 180) - 90;
@@ -61,18 +61,21 @@ export const PressureGauge: React.FC<PressureGaugeProps> = ({ pressure = 1013 })
 
             {/* Simple Markers - High Visibility Black */}
             <text x="15" y="60" fontSize="5" fill="#1e293b" fontWeight="900" textAnchor="middle">LOW</text>
-            <text x="50" y="5" fontSize="5" fill="#1e293b" fontWeight="900" textAnchor="middle">NORMAL</text>
+            <circle cx="50" cy="15" r="1.5" fill="#10b981" />
+            <text x="50" y="8" fontSize="5" fill="#1e293b" fontWeight="900" textAnchor="middle">NORMAL</text>
             <text x="85" y="60" fontSize="5" fill="#1e293b" fontWeight="900" textAnchor="middle">HIGH</text>
 
-            {/* 🧭 Precision Needle */}
+            {/* 🧭 Precision Needle - Engineered for Absolute Center Rotation */}
             <motion.g
               initial={{ rotate: -90 }}
               animate={{ rotate: rotation }}
-              transition={{ type: "spring", stiffness: 40, damping: 15 }}
-              style={{ originX: '50px', originY: '50px' }}
+              transition={{ type: "spring", stiffness: 60, damping: 20 }}
+              style={{ transformOrigin: "50px 50px" }}
             >
-              <path d="M 50 50 L 50 18" stroke="#1e293b" strokeWidth="3" strokeLinecap="round" />
-              <circle cx="50" cy="18" r="2" fill="#1e293b" />
+              {/* Ghost bounding box to fix rotation pivot */}
+              <rect x="0" y="0" width="100" height="100" fill="transparent" />
+              <path d="M 50 50 L 50 15" stroke="#1e293b" strokeWidth="2.5" strokeLinecap="round" />
+              <circle cx="50" cy="15" r="1.5" fill="#1e293b" />
             </motion.g>
 
             {/* Hub */}
@@ -112,7 +115,7 @@ export const PressureGauge: React.FC<PressureGaugeProps> = ({ pressure = 1013 })
               {pressure > 1013 ? <RiArrowUpSFill /> : <RiArrowDownSFill />}
               <span>{pressure > 1013 ? 'Rising' : 'Falling'}</span>
             </div>
-            <span className="text-[10px] font-bold text-slate-500 mt-2">{status.impact}</span>
+            <span className="text-[10px] text-end font-bold text-slate-500 mt-2">{status.impact}</span>
           </div>
         </div>
 
