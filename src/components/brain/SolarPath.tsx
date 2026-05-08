@@ -7,53 +7,72 @@ import { RiSunFill, RiMoonFill, RiTimeLine, RiSunLine } from 'react-icons/ri';
 interface SolarPathProps {
   sunrise: string;
   sunset: string;
+  rawSunrise?: number;
+  rawSunset?: number;
+  timezone?: number;
+  dt?: number;
 }
 
-export const SolarPath: React.FC<SolarPathProps> = ({ sunrise, sunset }) => {
+export const SolarPath: React.FC<SolarPathProps> = ({ 
+  sunrise, 
+  sunset, 
+  rawSunrise, 
+  rawSunset, 
+  timezone,
+  dt 
+}) => {
   const { currentProgress, daylightDuration, statusText, timeLeft } = useMemo(() => {
     try {
-      const now = new Date();
-      const [riseH, riseM] = (sunrise || '06:00').split(':').map(Number);
-      const [setH, setM] = (sunset || '18:00').split(':').map(Number);
+      // Use raw timestamps if available, otherwise fallback to parsing strings
+      const rise = rawSunrise ? rawSunrise * 1000 : 0;
+      const set = rawSunset ? rawSunset * 1000 : 0;
+      const now = dt ? dt * 1000 : Date.now();
 
-      const riseMin = riseH * 60 + (riseM || 0);
-      const setMin = setH * 60 + (setM || 0);
-      const nowMin = now.getHours() * 60 + now.getMinutes();
+      if (!rise || !set) {
+        return { currentProgress: 0.5, daylightDuration: '12 hours', statusText: 'Daylight Active', timeLeft: 'Sunset soon' };
+      }
 
-      const durationMin = setMin - riseMin;
-      const h = Math.floor(durationMin / 60);
-      const m = durationMin % 60;
+      const durationMs = set - rise;
+      const elapsedMs = now - rise;
+      
+      const h = Math.floor(durationMs / (1000 * 60 * 60));
+      const m = Math.floor((durationMs / (1000 * 60)) % 60);
 
       let progress = 0;
       let status = '';
       let remaining = '';
 
-      if (nowMin < riseMin) {
+      if (now < rise) {
         progress = 0;
         status = 'Sun is rising soon';
-        const diff = riseMin - nowMin;
-        remaining = `Sunrise in ${Math.floor(diff / 60)}h ${diff % 60}m`;
-      } else if (nowMin > setMin) {
+        const diffMs = rise - now;
+        const diffH = Math.floor(diffMs / (3600000));
+        const diffM = Math.floor((diffMs % 3600000) / 60000);
+        remaining = `Sunrise in ${diffH}h ${diffM}m`;
+      } else if (now > set) {
         progress = 1;
         status = 'Sunset has passed';
-        remaining = 'Night time';
+        remaining = 'Night operational';
       } else {
-        progress = (nowMin - riseMin) / (setMin - riseMin);
-        status = 'Daylight is active';
-        const diff = setMin - nowMin;
-        remaining = `Sunset in ${Math.floor(diff / 60)}h ${diff % 60}m`;
+        progress = elapsedMs / durationMs;
+        status = 'Daylight active';
+        const diffMs = set - now;
+        const diffH = Math.floor(diffMs / (3600000));
+        const diffM = Math.floor((diffMs % 3600000) / 60000);
+        remaining = `Sunset in ${diffH}h ${diffM}m`;
       }
 
       return {
-        currentProgress: progress,
-        daylightDuration: `${h} hours ${m} mins`,
+        currentProgress: Math.min(Math.max(progress, 0), 1),
+        daylightDuration: `${h}h ${m}m`,
         statusText: status,
         timeLeft: remaining
       };
-    } catch {
-      return { currentProgress: 0.5, daylightDuration: '12 hours', statusText: 'Daylight Active', timeLeft: 'Sunset soon' };
+    } catch (e) {
+      console.error("[Solar Error]", e);
+      return { currentProgress: 0.5, daylightDuration: '12h', statusText: 'Active', timeLeft: 'N/A' };
     }
-  }, [sunrise, sunset]);
+  }, [rawSunrise, rawSunset, dt]);
 
   return (
     <div className="flex flex-col gap-8 w-full py-4">

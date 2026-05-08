@@ -423,7 +423,14 @@ export default function GoogleWeatherApp() {
 
         <div id="solar-telemetry" className="grid grid-cols-1 gap-4 scroll-mt-24">
           <BentoCard title="Sunrise & Sunset" icon={RiSunLine} className="md:col-span-1">
-            <SolarPath sunrise={weather?.sunrise} sunset={weather?.sunset} />
+            <SolarPath 
+              sunrise={weather?.sunrise} 
+              sunset={weather?.sunset}
+              rawSunrise={weather?.rawSunrise}
+              rawSunset={weather?.rawSunset}
+              dt={weather?.dt}
+              timezone={weather?.timezone}
+            />
           </BentoCard>
 
           <BentoCard title="Climate Analytics" icon={RiCompass3Line}>

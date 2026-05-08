@@ -5,6 +5,23 @@ const BASE_URL = 'https://api.openweathermap.org/data/2.5';
 
 export const runtime = 'edge';
 
+// 🚀 Tactical Fetch with Timeout Watchdog
+const fetchWithTimeout = async (url: string, timeout = 10000) => {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeout);
+  try {
+    const response = await fetch(url, { signal: controller.signal });
+    clearTimeout(id);
+    return response;
+  } catch (err) {
+    clearTimeout(id);
+    throw err;
+  }
+};
+
+// 🚀 High-Speed In-Memory Cache
+const cache = new Map<string, { data: any, timestamp: number }>();
+
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -20,10 +37,13 @@ export async function GET(request: Request) {
       lat = parseFloat(latParam);
       lon = parseFloat(lonParam);
 
+      lat = parseFloat(latParam);
+      lon = parseFloat(lonParam);
+
       const [currentRes, aqiRes, forecastRes] = await Promise.all([
-        fetch(`${BASE_URL}/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`),
-        fetch(`${BASE_URL}/air_pollution?lat=${lat}&lon=${lon}&appid=${API_KEY}`),
-        fetch(`${BASE_URL}/forecast?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`)
+        fetchWithTimeout(`${BASE_URL}/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`),
+        fetchWithTimeout(`${BASE_URL}/air_pollution?lat=${lat}&lon=${lon}&appid=${API_KEY}`),
+        fetchWithTimeout(`${BASE_URL}/forecast?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`)
       ]);
 
       if (!currentRes.ok) throw new Error(`Current weather API failed: ${currentRes.status}`);
@@ -38,7 +58,7 @@ export async function GET(request: Request) {
       var forecastList = forecastData.list || [];
     } else {
       const currentUrl = `${BASE_URL}/weather?q=${encodeURIComponent(city || 'Navi Mumbai')}&appid=${API_KEY}&units=metric`;
-      const currentRes = await fetch(currentUrl);
+      const currentRes = await fetchWithTimeout(currentUrl);
       if (!currentRes.ok) {
         const errorText = await currentRes.text();
         throw new Error(`Location not found (${currentRes.status}): ${errorText}`);
@@ -50,8 +70,8 @@ export async function GET(request: Request) {
 
       // Fetch AQI and Forecast with defensive error handling
       const [aqiRes, forecastRes] = await Promise.all([
-        fetch(`${BASE_URL}/air_pollution?lat=${lat}&lon=${lon}&appid=${API_KEY}`).catch(() => null),
-        fetch(`${BASE_URL}/forecast?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`).catch(() => null)
+        fetchWithTimeout(`${BASE_URL}/air_pollution?lat=${lat}&lon=${lon}&appid=${API_KEY}`).catch(() => null),
+        fetchWithTimeout(`${BASE_URL}/forecast?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`).catch(() => null)
       ]);
 
       var aqiData = aqiRes && aqiRes.ok ? await aqiRes.json() : { list: [] };
@@ -92,6 +112,10 @@ export async function GET(request: Request) {
         visibility: (current.visibility || 0) / 1000,
         sunrise: current.sys?.sunrise ? new Date(current.sys.sunrise * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--',
         sunset: current.sys?.sunset ? new Date(current.sys.sunset * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--',
+        rawSunrise: current.sys?.sunrise,
+        rawSunset: current.sys?.sunset,
+        timezone: current.timezone,
+        dt: current.dt,
         aqi: aqi?.main?.aqi || 1,
         aqiComponents: aqi?.components || {},
         lat,

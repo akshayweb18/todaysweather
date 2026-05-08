@@ -20,11 +20,15 @@ L.Marker.prototype.options.icon = DefaultIcon;
 const ChangeView = ({ center }: { center: L.LatLngExpression }) => {
   const map = useMap();
   React.useEffect(() => {
-    if (map) {
+    if (map && center) {
       try {
-        map.setView(center, map.getZoom(), { animate: true });
+        // Ensure the center is valid before moving
+        const [lat, lon] = center as [number, number];
+        if (typeof lat === 'number' && typeof lon === 'number') {
+          map.setView(center, map.getZoom(), { animate: true });
+        }
       } catch (err) {
-        console.warn("Leaflet View update deferred:", err);
+        console.warn("Leaflet View synchronization deferred:", err);
       }
     }
   }, [center, map]);
@@ -51,12 +55,13 @@ export const InteractiveMap: React.FC<{ lat: number; lon: number; city: string }
   return (
     <div className="w-full h-full overflow-hidden border border-white/10 relative group shadow-[0_0_100px_rgba(0,0,0,0.5)] bg-[#0a0a0a]">
       <MapContainer
-        key={mapKey}
+        key={`${lat}-${lon}`}
         center={center}
         zoom={12}
         style={{ height: '100%', width: '100%', background: '#0a0a0a' }}
         zoomControl={false}
         scrollWheelZoom={false}
+        attributionControl={false}
       >
         <ChangeView center={center} />
         {/* Google Satellite Hybrid Tiles */}
