@@ -48,16 +48,14 @@ export async function GET(request: Request) {
       lat = current.coord.lat;
       lon = current.coord.lon;
 
+      // Fetch AQI and Forecast with defensive error handling
       const [aqiRes, forecastRes] = await Promise.all([
-        fetch(`${BASE_URL}/air_pollution?lat=${lat}&lon=${lon}&appid=${API_KEY}`),
-        fetch(`${BASE_URL}/forecast?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`)
+        fetch(`${BASE_URL}/air_pollution?lat=${lat}&lon=${lon}&appid=${API_KEY}`).catch(() => null),
+        fetch(`${BASE_URL}/forecast?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`).catch(() => null)
       ]);
 
-      if (!aqiRes.ok) throw new Error(`AQI API failed: ${aqiRes.status}`);
-      if (!forecastRes.ok) throw new Error(`Forecast API failed: ${forecastRes.status}`);
-
-      var aqiData = await aqiRes.json();
-      var forecastData = await forecastRes.json();
+      var aqiData = aqiRes && aqiRes.ok ? await aqiRes.json() : { list: [] };
+      var forecastData = forecastRes && forecastRes.ok ? await forecastRes.json() : { list: [] };
       
       var aqi = aqiData.list?.[0];
       var forecastList = forecastData.list || [];
@@ -111,7 +109,7 @@ export async function GET(request: Request) {
       }
     }, {
       headers: {
-        'Cache-Control': 'public, s-maxage=600, stale-while-revalidate=300'
+        'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400'
       }
     });
   } catch (error: any) {

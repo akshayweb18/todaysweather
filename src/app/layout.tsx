@@ -13,8 +13,13 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AETHER OS | Autonomous Weather Intelligence",
-  description: "Next-generation proactive AI weather agent system with multi-agent reasoning and autonomous decision making.",
+  title: "Today's Weather | Tactical Intelligence",
+  description: "Next-generation proactive weather monitoring system with real-time tactical intelligence.",
+  icons: {
+    icon: "/icon/weathericon.png",
+    apple: "/icon/weathericon.png",
+  },
+  manifest: "/manifest.json",
 };
 
 export default function RootLayout({

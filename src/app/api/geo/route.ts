@@ -13,7 +13,7 @@ export async function GET(request: Request) {
     }
 
     const res = await axios.get(`http://api.openweathermap.org/geo/1.0/direct`, {
-      params: { q, limit: 5, appid: API_KEY }
+      params: { q, limit: 10, appid: API_KEY }
     });
 
     const suggestions = res.data.map((item: any) => ({
@@ -28,7 +28,11 @@ export async function GET(request: Request) {
       a.findIndex(t => t.fullName === v.fullName) === i
     );
 
-    return NextResponse.json({ success: true, data: uniqueSuggestions });
+    return NextResponse.json({ success: true, data: uniqueSuggestions }, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=86400, stale-while-revalidate=31536000'
+      }
+    });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: "Geocoding Failed." }, { status: 500 });
   }

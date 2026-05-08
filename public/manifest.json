@@ -1,0 +1,21 @@
+{
+  "name": "Today's Weather",
+  "short_name": "Weather",
+  "description": "Tactical Weather Intelligence Dashboard",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0b57d0",
+  "icons": [
+    {
+      "src": "/icon/weathericon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon/weathericon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

@@ -179,8 +179,10 @@ export default function GoogleWeatherApp() {
   };
 
   const fetchWeather = async (searchCity: string = city, lat?: number, lon?: number) => {
-    if (!searchCity && (lat === undefined || lon === undefined)) {
-      console.warn("Attempted to fetch weather with no city or coordinates.");
+    // If absolutely nothing is provided, fallback to a default location
+    const finalCity = searchCity || (lat === undefined ? 'Navi Mumbai' : '');
+
+    if (!finalCity && (lat === undefined || lon === undefined)) {
       return;
     }
 
@@ -193,15 +195,18 @@ export default function GoogleWeatherApp() {
       }
       const res = await fetch(url);
       const contentType = res.headers.get('content-type') || '';
-      if (!res.ok || !contentType.includes('application/json')) {
+
+      if (contentType.includes('application/json')) {
+        const data = await res.json();
+        if (data.success) {
+          setWeather(data.data);
+          setError('');
+        } else {
+          setError(data.error || 'Location not found.');
+        }
+      } else if (!res.ok) {
         const responseText = await res.text();
-        throw new Error(`API returned non-JSON response (${res.status}): ${responseText.slice(0, 120)}`);
-      }
-      const data = await res.json();
-      if (data.success) {
-        setWeather(data.data);
-      } else {
-        setError(data.error || 'City not found. Please try a different location.');
+        throw new Error(`Server Error (${res.status}): ${responseText.slice(0, 50)}`);
       }
     } catch (err: any) {
       console.error(err);
@@ -213,15 +218,18 @@ export default function GoogleWeatherApp() {
 
   useEffect(() => {
     setMounted(true);
+    // 🌍 Immediate GPS Targeting
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          fetchWeather(city, position.coords.latitude, position.coords.longitude);
+          console.log("[GPS] Precision targeting acquired:", position.coords);
+          fetchWeather('', position.coords.latitude, position.coords.longitude);
         },
         (error) => {
-          console.warn("Geolocation denied, using default.");
-          fetchWeather();
-        }
+          console.warn("[GPS] Location denied or failed, using default fallback.");
+          fetchWeather('Navi Mumbai'); // Default fallback
+        },
+        { enableHighAccuracy: true, timeout: 5000 }
       );
     } else {
       fetchWeather();
@@ -239,7 +247,7 @@ export default function GoogleWeatherApp() {
   if (!mounted) return null;
 
   return (
-    <main className={`min-h-screen ${theme} transition-all duration-1000 pb-10 px-4 md:px-8 relative overflow-hidden`}>
+    <main className={`min-h-screen ${theme} transition-all duration-1000 pb-4 px-4 md:px-8 relative overflow-hidden`}>
       {/* 🌌 Cosmic Background Layer */}
       <div className="fixed inset-0 bg-gradient-to-br from-white via-[#f0f4f9] to-[#e8f0fe] -z-20" />
       <div className="fixed inset-0 opacity-30 pointer-events-none -z-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]" />
@@ -249,7 +257,7 @@ export default function GoogleWeatherApp() {
       <div className="max-w-4xl mx-auto pt-6 space-y-6 relative z-10">
 
         {/* 🔍 Google Style Search Bar */}
-        <header className="flex flex-col md:flex-row items-center gap-4 w-full relative">
+        <header className="flex flex-col md:flex-row items-center gap-4 w-full relative z-[100]">
           <div
             onClick={(e) => e.stopPropagation()}
             className="flex-1 flex items-center flex-nowrap gap-2 bg-white/80 backdrop-blur-md px-3 md:px-6 py-3 rounded-full shadow-sm border border-[#f0f0f0] w-full relative"
@@ -284,13 +292,21 @@ export default function GoogleWeatherApp() {
               <button
                 onClick={() => {
                   if ("geolocation" in navigator) {
+                    setGeoLoading(true);
                     navigator.geolocation.getCurrentPosition(
-                      (position) => fetchWeather(city, position.coords.latitude, position.coords.longitude),
-                      (error) => console.warn("Geolocation denied.")
+                      (position) => {
+                        fetchWeather('', position.coords.latitude, position.coords.longitude);
+                        setGeoLoading(false);
+                      },
+                      (error) => {
+                        console.warn("Geolocation denied.");
+                        setGeoLoading(false);
+                      },
+                      { enableHighAccuracy: true }
                     );
                   }
                 }}
-                className="p-2 hover:bg-[#f0f4f9] rounded-full text-[#0b57d0] transition-colors shrink-0"
+                className={`p-2 hover:bg-[#f0f4f9] rounded-full text-[#0b57d0] transition-all shrink-0 ${geoLoading ? 'animate-spin' : ''}`}
                 title="Detect Current Location"
               >
                 <RiNavigationLine className="text-xl" />
@@ -315,32 +331,50 @@ export default function GoogleWeatherApp() {
                   onClick={(e) => e.stopPropagation()}
                   className="absolute top-full left-0 right-0 mt-4 bg-white rounded-3xl shadow-xl border border-[#f0f0f0] overflow-hidden z-[200]"
                 >
-                  {suggestions.map((s, i) => (
-                    <button
-                      key={i}
-                      onClick={() => selectSuggestion(s.fullName)}
-                      className="w-full px-6 py-4 text-left hover:bg-[#f0f4f9] transition-all flex items-center gap-4 border-b border-[#f8f8f8] last:border-0 group"
-                    >
-                      <div className="p-3 bg-slate-50 rounded-full group-hover:bg-white transition-colors shadow-sm">
-                        <RiMapPin2Line className="text-[#0b57d0] text-lg" />
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="font-bold text-[#1f1f1f] text-base tracking-tight">{s.name}</span>
-                        <span className="text-[11px] text-slate-500 font-medium uppercase tracking-widest">
-                          {s.state ? `${s.state}, ` : ''}{s.country}
-                        </span>
-                      </div>
-                    </button>
-                  ))}
+                  {suggestions.map((s, i) => {
+                    const matchIndex = s.name.toLowerCase().indexOf(city.toLowerCase());
+                    const before = s.name.substring(0, matchIndex);
+                    const match = s.name.substring(matchIndex, matchIndex + city.length);
+                    const after = s.name.substring(matchIndex + city.length);
+
+                    return (
+                      <button
+                        key={i}
+                        onClick={() => selectSuggestion(s.fullName)}
+                        className="w-full px-6 py-4 text-left hover:bg-[#f0f4f9] transition-all flex items-center gap-4 border-b border-[#f8f8f8] last:border-0 group"
+                      >
+                        <div className="p-3 bg-slate-50 rounded-full group-hover:bg-[#0b57d0] transition-all shadow-sm">
+                          <RiMapPin2Line className="text-[#0b57d0] text-lg group-hover:text-white" />
+                        </div>
+                        <div className="flex flex-col">
+                          <div className="text-base tracking-tight text-slate-500 font-medium">
+                            {matchIndex !== -1 ? (
+                              <>
+                                {before}
+                                <span className="text-slate-900 font-black">{match}</span>
+                                {after}
+                              </>
+                            ) : (
+                              <span className="text-slate-900 font-black">{s.name}</span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] text-[#0b57d0] font-black uppercase tracking-tighter bg-blue-50 px-2 py-0.5 rounded-md">
+                              {s.country}
+                            </span>
+                            <span className="text-[11px] text-slate-400 font-bold uppercase tracking-widest">
+                              {s.state ? `${s.state}` : 'World Region'}
+                            </span>
+                          </div>
+                        </div>
+                      </button>
+                    );
+                  })}
                 </motion.div>
               )}
             </AnimatePresence>
           </div>
-          <div className="flex items-center gap-3 bg-white/80 backdrop-blur-md px-4 py-3 rounded-full shadow-sm border border-[#f0f0f0]">
-            <RiMapPin2Line className="text-[#0b57d0] text-xl" />
-            <div className="w-px h-6 bg-[#f0f0f0]" />
-            <RiMenuLine className="text-[#444746] text-xl" />
-          </div>
+
         </header>
 
         {/* ⚠️ Error Feedback */}
@@ -445,9 +479,8 @@ export default function GoogleWeatherApp() {
             <ClimateAnalytics
               currentTemp={weather?.temp}
               feelsLike={weather?.feelsLike}
-              high={weather?.tempMax}
-              low={weather?.tempMin}
               humidity={weather?.humidity}
+              condition={weather?.description || weather?.mainCondition}
             />
           </BentoCard>
 
@@ -456,11 +489,20 @@ export default function GoogleWeatherApp() {
           </BentoCard>
         </div>
 
-        <footer className="pt-10 pb-6 flex flex-col items-center gap-4 border-t border-[#f0f0f0] opacity-50">
-          <p className="text-xs font-medium text-[#444746]">Data from OpenWeather • v4.8</p>
-          <div className="flex gap-4">
-            <RiSettings4Line className="text-xl" />
-            <RiMore2Line className="text-xl" />
+        <footer className="pt-6 pb-4 flex flex-col items-center gap-4 border-t border-slate-200/50 mt-4">
+          <div className="flex flex-col items-center gap-1">
+            <p className="text-sm font-black text-slate-900 tracking-tight">
+              Weather App Developed by <span className="bg-gradient-to-r from-[#0b57d0] to-[#0842a0] bg-clip-text text-transparent">Akshay Chaudhari</span>
+            </p>
+            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center">
+              Tactical Intelligence • © 2026
+            </p>
+          </div>
+
+          <div className="flex items-center gap-4 opacity-30 hover:opacity-100 transition-opacity">
+            <RiDashboardLine className="text-lg text-slate-400" />
+            <RiCompass3Line className="text-lg text-slate-400" />
+            <RiSunLine className="text-lg text-slate-400" />
           </div>
         </footer>
       </div>
