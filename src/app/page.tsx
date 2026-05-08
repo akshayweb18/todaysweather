@@ -29,6 +29,7 @@ import { AnimatedWeatherIcon } from '@/components/brain/AnimatedWeatherIcon';
 import { ClimateAnalytics } from '@/components/brain/ClimateAnalytics';
 import { TacticalMetrics } from '@/components/brain/TacticalMetrics';
 import { SolarPath } from '@/components/brain/SolarPath';
+import { PressureGauge } from '@/components/brain/PressureGauge';
 
 const InteractiveMap = dynamic(
   () => import('@/components/brain/InteractiveMap').then(mod => mod.InteractiveMap),
@@ -36,7 +37,7 @@ const InteractiveMap = dynamic(
 );
 
 const BentoCard = ({ title, icon: Icon, children, className }: any) => (
-  <motion.div 
+  <motion.div
     whileHover={{ y: -4 }}
     className={`bg-white/75 backdrop-blur-2xl p-8 flex flex-col gap-6 rounded-[40px] border border-white/60 shadow-[0_12px_40px_rgba(0,0,0,0.06)] ${className}`}
   >
@@ -363,7 +364,7 @@ export default function GoogleWeatherApp() {
         </AnimatePresence>
 
         <section className="flex flex-col items-center text-center py-16 relative">
-          <motion.div 
+          <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             className="flex items-center gap-3 mb-6 px-8 py-3 bg-white/70 backdrop-blur-md rounded-full border border-white/40 shadow-md"
@@ -373,7 +374,7 @@ export default function GoogleWeatherApp() {
           </motion.div>
 
           <div className="flex flex-col items-center relative">
-            <motion.div 
+            <motion.div
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               className="text-[140px] font-black tracking-tighter leading-none text-[#1f1f1f] mb-4 flex items-start -ml-6 drop-shadow-xl"
@@ -441,7 +442,7 @@ export default function GoogleWeatherApp() {
           </BentoCard>
 
           <BentoCard title="Climate Analytics" icon={RiCompass3Line}>
-            <ClimateAnalytics 
+            <ClimateAnalytics
               currentTemp={weather?.temp}
               feelsLike={weather?.feelsLike}
               high={weather?.tempMax}
@@ -450,9 +451,8 @@ export default function GoogleWeatherApp() {
             />
           </BentoCard>
 
-          <BentoCard title="Pressure" icon={RiCompass3Line}>
-            <div className="text-2xl font-medium text-[#1f1f1f]">{weather?.pressure} <span className="text-sm font-normal text-[#5f6368]">hPa</span></div>
-            <div className="text-xs text-[#5f6368]">Atmospheric load status</div>
+          <BentoCard title="Barometric Pressure" icon={RiDashboardLine}>
+            <PressureGauge pressure={weather?.pressure} />
           </BentoCard>
         </div>
 
