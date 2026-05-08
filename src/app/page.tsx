@@ -123,7 +123,7 @@ export default function GoogleWeatherApp() {
       } else {
         setSuggestions([]);
       }
-    }, 500);
+    }, 300); // Reduced debounce time for snappier feel
     return () => clearTimeout(timer);
   }, [city]);
 
@@ -138,10 +138,10 @@ export default function GoogleWeatherApp() {
     return () => window.removeEventListener('click', handleClickOutside);
   }, []);
 
-  const selectSuggestion = (fullName: string) => {
-    setCity(fullName);
+  const selectSuggestion = (s: any) => {
+    setCity(s.fullName);
     setSuggestions([]);
-    fetchWeather(fullName);
+    fetchWeather('', s.lat, s.lon); // Fetch by exact coordinates
   };
 
   const fetchWeather = async (searchCity: string = city, lat?: number, lon?: number) => {
@@ -185,6 +185,21 @@ export default function GoogleWeatherApp() {
   useEffect(() => {
     setMounted(true);
     // 🌍 Immediate GPS Targeting
+    const fetchFallbackLocation = async () => {
+      try {
+        const res = await fetch('https://ipapi.co/json/');
+        const data = await res.json();
+        if (data.city) {
+          console.log("[IP-Geo] Fallback location acquired:", data.city);
+          fetchWeather(data.city);
+          return;
+        }
+      } catch (err) {
+        console.warn("[IP-Geo] Fallback failed, using hardcoded default.");
+      }
+      fetchWeather('Navi Mumbai');
+    };
+
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -192,13 +207,13 @@ export default function GoogleWeatherApp() {
           fetchWeather('', position.coords.latitude, position.coords.longitude);
         },
         (error) => {
-          console.warn("[GPS] Location denied or failed, using default fallback.");
-          fetchWeather('Navi Mumbai'); // Default fallback
+          console.warn("[GPS] Location denied or failed, attempting IP-based fallback.");
+          fetchFallbackLocation();
         },
         { enableHighAccuracy: true, timeout: 5000 }
       );
     } else {
-      fetchWeather();
+      fetchFallbackLocation();
     }
   }, []);
 
@@ -314,31 +329,40 @@ export default function GoogleWeatherApp() {
                     return (
                       <button
                         key={i}
-                        onClick={() => selectSuggestion(s.fullName)}
+                        onClick={() => selectSuggestion(s)}
                         className="w-full px-6 py-4 text-left hover:bg-[#f0f4f9] transition-all flex items-center gap-4 border-b border-[#f8f8f8] last:border-0 group"
                       >
                         <div className="p-3 bg-slate-50 rounded-full group-hover:bg-[#0b57d0] transition-all shadow-sm">
                           <RiMapPin2Line className="text-[#0b57d0] text-lg group-hover:text-white" />
                         </div>
-                        <div className="flex flex-col">
-                          <div className="text-base tracking-tight text-slate-500 font-medium">
+                        <div className="flex flex-col flex-1">
+                          <div className="text-base tracking-tight text-slate-700 font-semibold truncate">
                             {matchIndex !== -1 ? (
                               <>
                                 {before}
-                                <span className="text-slate-900 font-black">{match}</span>
+                                <span className="text-[#0b57d0] font-black">{match}</span>
                                 {after}
                               </>
                             ) : (
                               <span className="text-slate-900 font-black">{s.name}</span>
                             )}
                           </div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-[10px] text-[#0b57d0] font-black uppercase tracking-tighter bg-blue-50 px-2 py-0.5 rounded-md">
-                              {s.country}
-                            </span>
-                            <span className="text-[11px] text-slate-400 font-bold uppercase tracking-widest">
-                              {s.state ? `${s.state}` : 'World Region'}
-                            </span>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            {s.country && (
+                              <span className="text-[10px] text-[#0b57d0] font-black uppercase tracking-tighter bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100/50">
+                                {s.country}
+                              </span>
+                            )}
+                            {s.state && (
+                              <span className="text-[11px] text-slate-400 font-bold uppercase tracking-widest truncate">
+                                {s.state}
+                              </span>
+                            )}
+                            {!s.state && s.countryFull && (
+                              <span className="text-[11px] text-slate-400 font-bold uppercase tracking-widest truncate">
+                                {s.countryFull}
+                              </span>
+                            )}
                           </div>
                         </div>
                       </button>
