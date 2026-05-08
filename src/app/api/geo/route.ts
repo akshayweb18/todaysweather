@@ -17,6 +17,7 @@ export async function GET(request: Request) {
         format: 'json',
         addressdetails: 1,
         limit: 10,
+        'accept-language': 'en', // Force English results
         featuretype: 'city,state,country' // Focus on administrative areas
       },
       headers: {
