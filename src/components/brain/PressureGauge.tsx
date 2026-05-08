@@ -39,30 +39,30 @@ export const PressureGauge: React.FC<PressureGaugeProps> = ({ pressure = 1013 })
             </defs>
 
             {/* Main Track */}
-            <path 
-              d="M 15 50 A 35 35 0 0 1 85 50" 
-              fill="none" 
-              stroke="#f1f5f9" 
-              strokeWidth="8" 
-              strokeLinecap="round" 
+            <path
+              d="M 15 50 A 35 35 0 0 1 85 50"
+              fill="none"
+              stroke="#f1f5f9"
+              strokeWidth="8"
+              strokeLinecap="round"
             />
-            
+
             {/* Active Gradient Segment */}
-            <motion.path 
-              d="M 15 50 A 35 35 0 0 1 85 50" 
-              fill="none" 
-              stroke="url(#pressureGradientElite)" 
-              strokeWidth="8" 
-              strokeLinecap="round" 
+            <motion.path
+              d="M 15 50 A 35 35 0 0 1 85 50"
+              fill="none"
+              stroke="url(#pressureGradientElite)"
+              strokeWidth="8"
+              strokeLinecap="round"
               initial={{ pathLength: 0 }}
               animate={{ pathLength: progress }}
               transition={{ duration: 2, ease: "circOut" }}
             />
 
             {/* Simple Markers - High Visibility Black */}
-            <text x="15" y="45" fontSize="4.5" fill="#1e293b" fontWeight="900" textAnchor="middle">LOW</text>
-            <text x="50" y="5" fontSize="4.5" fill="#1e293b" fontWeight="900" textAnchor="middle">NORMAL</text>
-            <text x="85" y="45" fontSize="4.5" fill="#1e293b" fontWeight="900" textAnchor="middle">HIGH</text>
+            <text x="15" y="60" fontSize="5" fill="#1e293b" fontWeight="900" textAnchor="middle">LOW</text>
+            <text x="50" y="5" fontSize="5" fill="#1e293b" fontWeight="900" textAnchor="middle">NORMAL</text>
+            <text x="85" y="60" fontSize="5" fill="#1e293b" fontWeight="900" textAnchor="middle">HIGH</text>
 
             {/* 🧭 Precision Needle */}
             <motion.g
@@ -83,7 +83,7 @@ export const PressureGauge: React.FC<PressureGaugeProps> = ({ pressure = 1013 })
         {/* Big Numeric Readout - Moved completely below SVG to avoid overlap */}
         <div className="mt-4 flex flex-col items-center">
           <div className="flex items-baseline gap-2">
-            <motion.span 
+            <motion.span
               key={pressure}
               initial={{ y: 10, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
@@ -94,8 +94,8 @@ export const PressureGauge: React.FC<PressureGaugeProps> = ({ pressure = 1013 })
             <span className="text-xl font-bold text-slate-400">hPa</span>
           </div>
           <div className="flex items-center gap-2 mt-1">
-             <RiPulseLine className="text-emerald-500 animate-pulse text-xs" />
-             <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Air Pressure Monitoring</span>
+            <RiPulseLine className="text-emerald-500 animate-pulse text-xs" />
+            <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Air Pressure Monitoring</span>
           </div>
         </div>
       </div>
@@ -123,7 +123,7 @@ export const PressureGauge: React.FC<PressureGaugeProps> = ({ pressure = 1013 })
           <div className="flex flex-col gap-1">
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Weather Hint</span>
             <p className="text-xs font-bold text-slate-600 leading-relaxed">
-              {pressure > 1013 
+              {pressure > 1013
                 ? "Higher pressure usually means the weather will stay clear and sunny."
                 : "Lower pressure often means clouds or rain are moving into your area."}
             </p>

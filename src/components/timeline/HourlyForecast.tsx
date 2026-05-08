@@ -31,11 +31,11 @@ export const HourlyForecast: React.FC<HourlyForecastProps> = ({ items = [] }) =>
             <span className="text-[11px] font-bold text-[#5f6368] uppercase tracking-tighter">
               {i === 0 ? 'Now' : item.time}
             </span>
-            
+
             <div className="relative group">
-              <AnimatedWeatherIcon 
-                condition={item.description} 
-                className="w-10 h-10 group-hover:scale-110 transition-transform" 
+              <AnimatedWeatherIcon
+                condition={item.description}
+                className="w-10 h-10 group-hover:scale-110 transition-transform"
               />
               {item.rainChance > 0 && (
                 <div className="absolute -bottom-1 -right-1 flex items-center text-[9px] font-black text-[#0b57d0] bg-white rounded-full px-1 border border-blue-50 shadow-sm">
@@ -53,7 +53,7 @@ export const HourlyForecast: React.FC<HourlyForecastProps> = ({ items = [] }) =>
             </div>
           </motion.div>
         ))}
-        
+
         {(!items || items.length === 0) && (
           <div className="flex items-center justify-center w-full py-8 text-sm text-[#5f6368] font-medium">
             Synchronizing hourly projections...

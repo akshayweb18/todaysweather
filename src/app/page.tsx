@@ -400,7 +400,7 @@ export default function GoogleWeatherApp() {
           )}
         </AnimatePresence>
 
-        <section className="flex flex-col items-center text-center py-16 relative">
+        <section className="flex flex-col items-center text-center py-6 md:py-10 relative">
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
@@ -414,19 +414,19 @@ export default function GoogleWeatherApp() {
             <motion.div
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              className="text-[140px] font-black tracking-tighter leading-none text-[#1f1f1f] mb-4 flex items-start -ml-6 drop-shadow-xl"
+              className="text-[80px] md:text-[110px] font-black tracking-tighter leading-none text-[#1f1f1f] mb-4 flex items-start -ml-4 drop-shadow-xl"
             >
-              {weather?.temp || '--'}<span className="text-6xl mt-8 font-bold text-[#0b57d0]">°</span>
+              {weather?.temp || '--'}<span className="text-4xl md:text-5xl mt-4 md:mt-6 font-bold text-[#0b57d0]">°</span>
             </motion.div>
-            <div className="flex flex-col items-center gap-2 mb-12">
+            <div className="flex flex-col items-center gap-2 mb-6 md:mb-8">
               <span className="text-4xl font-black text-[#1f1f1f] capitalize tracking-tighter">{weather?.description}</span>
               <p className="text-lg font-bold text-[#5f6368] bg-white/50 px-6 py-2 rounded-full border border-white/30 shadow-sm">
                 H:{weather?.tempMax}° L:{weather?.tempMin}° • Feels like {weather?.feelsLike}°
               </p>
             </div>
-            <div className="relative group scale-125">
-              <div className="absolute inset-0 bg-[#0b57d0]/20 blur-[100px] rounded-full group-hover:bg-[#0b57d0]/30 transition-all" />
-              <AnimatedWeatherIcon condition={weather?.mainCondition} className="w-56 h-56 relative z-10" />
+            <div className="relative group scale-100 md:scale-110">
+              <div className="absolute inset-0 bg-[#0b57d0]/20 blur-[80px] rounded-full group-hover:bg-[#0b57d0]/30 transition-all" />
+              <AnimatedWeatherIcon condition={weather?.mainCondition} className="w-40 h-40 md:w-48 md:h-48 relative z-10" />
             </div>
           </div>
         </section>
