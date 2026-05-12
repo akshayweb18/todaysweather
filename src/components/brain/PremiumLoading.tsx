@@ -28,23 +28,23 @@ export const PremiumLoading: React.FC = () => {
       {/* 🌌 Atmospheric Background */}
       <div className="absolute inset-0 bg-gradient-to-br from-white via-[#f0f4f9] to-[#e8f0fe] -z-10" />
       <div className="absolute inset-0 opacity-30 pointer-events-none -z-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]" />
-      
+
       {/* 🌀 Rotating Radar Rings */}
       <div className="relative w-64 h-64 flex items-center justify-center">
         {[...Array(3)].map((_, i) => (
           <motion.div
             key={i}
             className="absolute border border-[#0b57d0]/10 rounded-full"
-            style={{ 
-              width: `${(i + 1) * 80}px`, 
-              height: `${(i + 1) * 80}px` 
+            style={{
+              width: `${(i + 1) * 80}px`,
+              height: `${(i + 1) * 80}px`
             }}
-            animate={{ 
+            animate={{
               rotate: 360,
               scale: [1, 1.05, 1],
               opacity: [0.1, 0.3, 0.1]
             }}
-            transition={{ 
+            transition={{
               rotate: { duration: 10 + i * 5, repeat: Infinity, ease: "linear" },
               scale: { duration: 3, repeat: Infinity, ease: "easeInOut" },
               opacity: { duration: 3, repeat: Infinity, ease: "easeInOut" }
@@ -104,14 +104,14 @@ export const PremiumLoading: React.FC = () => {
         <div className="w-48 h-1 bg-[#0b57d0]/5 rounded-full overflow-hidden mt-4 relative">
           <motion.div
             className="absolute left-0 top-0 h-full bg-[#0b57d0]"
-            animate={{ 
+            animate={{
               width: ["0%", "100%"],
               left: ["-100%", "100%"]
             }}
-            transition={{ 
-              duration: 2, 
-              repeat: Infinity, 
-              ease: "easeInOut" 
+            transition={{
+              duration: 2,
+              repeat: Infinity,
+              ease: "easeInOut"
             }}
           />
         </div>
