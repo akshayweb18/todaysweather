@@ -501,7 +501,20 @@ export default function GoogleWeatherApp() {
                   <AnimatedWeatherIcon condition={weather?.mainCondition} className="w-40 h-40 md:w-48 md:h-48 relative z-10" />
                 </div>
               </div>
+
+              {/* 🌧️ Live Rain Tracker Overlay */}
+              {weather?.mainCondition?.toLowerCase().includes('rain') && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mt-8 px-6 py-3 bg-blue-500/10 border border-blue-500/20 rounded-2xl flex items-center gap-3 backdrop-blur-md"
+                >
+                  <RiDropLine className="text-blue-500 text-xl animate-bounce" />
+                  <span className="text-sm font-bold text-blue-700 tracking-tight">Active Precipitation Detected in {weather?.location}</span>
+                </motion.div>
+              )}
             </section>
+
 
             {/* 📊 Hourly Forecast (Horizontal Scroll) */}
             <BentoCard className="overflow-hidden">
@@ -526,7 +539,9 @@ export default function GoogleWeatherApp() {
                   lat={weather?.lat}
                   lon={weather?.lon}
                   city={weather?.location}
+                  condition={weather?.mainCondition}
                 />
+
               </div>
             </div>
 

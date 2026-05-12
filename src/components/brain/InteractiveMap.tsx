@@ -35,7 +35,8 @@ const ChangeView = ({ center }: { center: L.LatLngExpression }) => {
   return null;
 };
 
-export const InteractiveMap: React.FC<{ lat: number; lon: number; city: string }> = ({ lat, lon, city }) => {
+export const InteractiveMap: React.FC<{ lat: number; lon: number; city: string; condition?: string }> = ({ lat, lon, city, condition }) => {
+
   const [mounted, setMounted] = React.useState(false);
   const [activeLayer, setActiveLayer] = React.useState<string | null>(null);
   const [opacity, setOpacity] = React.useState(0.6);
@@ -43,11 +44,16 @@ export const InteractiveMap: React.FC<{ lat: number; lon: number; city: string }
 
   React.useEffect(() => {
     setMounted(true);
+    // 🌧️ Auto-activate precipitation layer if rain is detected
+    if (condition?.toLowerCase().includes('rain')) {
+      setActiveLayer('precipitation');
+    }
     return () => {
       setMounted(false);
       setMap(null);
     };
-  }, []);
+  }, [condition]);
+
 
   // Unique key to prevent container reuse issues
   const mapKey = React.useMemo(() => `map-${lat}-${lon}`, [lat, lon]);
