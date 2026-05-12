@@ -40,10 +40,11 @@ export async function GET(request: Request) {
       lat = parseFloat(latParam);
       lon = parseFloat(lonParam);
 
-      const [currentRes, aqiRes, forecastRes] = await Promise.all([
+      const [currentRes, aqiRes, forecastRes, geoRes] = await Promise.all([
         fetchWithTimeout(`${BASE_URL}/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`),
         fetchWithTimeout(`${BASE_URL}/air_pollution?lat=${lat}&lon=${lon}&appid=${API_KEY}`),
-        fetchWithTimeout(`${BASE_URL}/forecast?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`)
+        fetchWithTimeout(`${BASE_URL}/forecast?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`),
+        fetchWithTimeout(`http://api.openweathermap.org/geo/1.0/reverse?lat=${lat}&lon=${lon}&limit=1&appid=${API_KEY}`)
       ]);
 
       if (!currentRes.ok) throw new Error(`Current weather API failed: ${currentRes.status}`);
@@ -53,9 +54,17 @@ export async function GET(request: Request) {
       current = await currentRes.json();
       var aqiData = await aqiRes.json();
       var forecastData = await forecastRes.json();
+      const geoData = geoRes.ok ? await geoRes.json() : [];
       
+      // Use more precise location name if available
+      if (geoData && geoData.length > 0) {
+        const place = geoData[0];
+        current.name = place.state ? `${place.name}, ${place.state}` : place.name;
+      }
+
       var aqi = aqiData.list?.[0];
       var forecastList = forecastData.list || [];
+
     } else {
       const currentUrl = `${BASE_URL}/weather?q=${encodeURIComponent(city || 'Navi Mumbai')}&appid=${API_KEY}&units=metric`;
       const currentRes = await fetchWithTimeout(currentUrl);

@@ -16,9 +16,10 @@ export const metadata: Metadata = {
   title: "Today's Weather | Tactical Intelligence",
   description: "Next-generation proactive weather monitoring system with real-time tactical intelligence.",
   icons: {
-    icon: "/icon/weathericon.png",
-    apple: "/icon/weathericon.png",
+    icon: "/favicon.svg",
+    apple: "/favicon.svg",
   },
+
   manifest: "/manifest.json",
 };
 

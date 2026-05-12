@@ -20,18 +20,47 @@ import {
   RiNavigationLine,
   RiCloseLine
 } from 'react-icons/ri';
-import { AQIMeter } from '@/components/brain/AQIMeter';
-import { ExtendedForecast } from '@/components/brain/ExtendedForecast';
-import { HourlyForecast } from '@/components/timeline/HourlyForecast';
-import { ProactiveAlert } from '@/components/alerts/ProactiveAlert';
-import { IntelligenceFeed } from '@/components/brain/IntelligenceFeed';
-import { AnimatedWeatherIcon } from '@/components/brain/AnimatedWeatherIcon';
-import { ClimateAnalytics } from '@/components/brain/ClimateAnalytics';
-import { TacticalMetrics } from '@/components/brain/TacticalMetrics';
-import { SolarPath } from '@/components/brain/SolarPath';
-import { PressureGauge } from '@/components/brain/PressureGauge';
-import { WindCompass } from '@/components/brain/WindCompass';
-import { WeatherAtmosphere } from '@/components/brain/WeatherAtmosphere';
+const AQIMeter = dynamic(() => import('@/components/brain/AQIMeter').then(mod => mod.AQIMeter), { 
+  ssr: false, 
+  loading: () => <div className="h-48 w-full bg-slate-100 animate-pulse rounded-[28px]" /> 
+});
+const ExtendedForecast = dynamic(() => import('@/components/brain/ExtendedForecast').then(mod => mod.ExtendedForecast), { 
+  ssr: false, 
+  loading: () => <div className="h-64 w-full bg-slate-100 animate-pulse rounded-[28px]" /> 
+});
+const HourlyForecast = dynamic(() => import('@/components/timeline/HourlyForecast').then(mod => mod.HourlyForecast), { 
+  ssr: false, 
+  loading: () => <div className="h-32 w-full bg-slate-100 animate-pulse rounded-[28px]" /> 
+});
+const ClimateAnalytics = dynamic(() => import('@/components/brain/ClimateAnalytics').then(mod => mod.ClimateAnalytics), { 
+  ssr: false, 
+  loading: () => <div className="h-48 w-full bg-slate-100 animate-pulse rounded-[28px]" /> 
+});
+const TacticalMetrics = dynamic(() => import('@/components/brain/TacticalMetrics').then(mod => mod.TacticalMetrics), { 
+  ssr: false, 
+  loading: () => <div className="h-48 w-full bg-slate-100 animate-pulse rounded-[28px]" /> 
+});
+const SolarPath = dynamic(() => import('@/components/brain/SolarPath').then(mod => mod.SolarPath), { 
+  ssr: false, 
+  loading: () => <div className="h-48 w-full bg-slate-100 animate-pulse rounded-[28px]" /> 
+});
+const PressureGauge = dynamic(() => import('@/components/brain/PressureGauge').then(mod => mod.PressureGauge), { 
+  ssr: false, 
+  loading: () => <div className="h-48 w-full bg-slate-100 animate-pulse rounded-[28px]" /> 
+});
+const WindCompass = dynamic(() => import('@/components/brain/WindCompass').then(mod => mod.WindCompass), { 
+  ssr: false, 
+  loading: () => <div className="h-48 w-full bg-slate-100 animate-pulse rounded-[28px]" /> 
+});
+const WeatherAtmosphere = dynamic(() => import('@/components/brain/WeatherAtmosphere').then(mod => mod.WeatherAtmosphere), { 
+  ssr: false 
+});
+const AnimatedWeatherIcon = dynamic(() => import('@/components/brain/AnimatedWeatherIcon').then(mod => mod.AnimatedWeatherIcon), { 
+  ssr: false,
+  loading: () => <div className="w-20 h-20 bg-slate-100 animate-pulse rounded-full" />
+});
+
+
 
 const InteractiveMap = dynamic(
   () => import('@/components/brain/InteractiveMap').then(mod => mod.InteractiveMap),
@@ -210,8 +239,13 @@ export default function GoogleWeatherApp() {
           console.warn("[GPS] Location denied or failed, attempting IP-based fallback.");
           fetchFallbackLocation();
         },
-        { enableHighAccuracy: true, timeout: 5000 }
+        { 
+          enableHighAccuracy: true, 
+          timeout: 10000, // Increased timeout for better satellite lock
+          maximumAge: 0   // Ensure fresh data
+        }
       );
+
     } else {
       fetchFallbackLocation();
     }
@@ -225,7 +259,8 @@ export default function GoogleWeatherApp() {
     return 'theme-sunny';
   }, [weather]);
 
-  if (!mounted) return null;
+  // Removed blocking mounted check to allow shell to render faster
+
 
   return (
     <main className="min-h-screen bg-[#f8f9fa] text-[#1f1f1f] font-sans selection:bg-[#0b57d0]/10 selection:text-[#0b57d0] overflow-x-hidden relative">
@@ -291,8 +326,13 @@ export default function GoogleWeatherApp() {
                         console.warn("Geolocation denied.");
                         setGeoLoading(false);
                       },
-                      { enableHighAccuracy: true }
+                      { 
+                        enableHighAccuracy: true,
+                        timeout: 10000,
+                        maximumAge: 0
+                      }
                     );
+
                   }
                 }}
                 className={`p-2 hover:bg-[#f0f4f9] rounded-full text-[#0b57d0] transition-all shrink-0 ${geoLoading ? 'animate-spin' : ''}`}
