@@ -67,7 +67,7 @@ const InteractiveMap = dynamic(
   { ssr: false, loading: () => <div className="w-full h-full bg-slate-50 animate-pulse rounded-[28px]" /> }
 );
 
-const PremiumLoading = dynamic(() => import('@/components/brain/PremiumLoading').then(mod => mod.PremiumLoading), { ssr: false });
+
 
 
 const BentoCard = ({ title, icon: Icon, children, className, loading }: any) => (
@@ -118,7 +118,8 @@ const MainSkeleton = () => (
 
 export default function GoogleWeatherApp() {
   const [weather, setWeather] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true); // Start as true to prevent initial placeholder flicker
+
   const [city, setCity] = useState('');
   const [error, setError] = useState('');
   const [mounted, setMounted] = useState(false);
@@ -281,20 +282,7 @@ export default function GoogleWeatherApp() {
         className="max-w-4xl mx-auto pt-4 md:pt-6 px-4 md:px-0 space-y-6 relative z-10"
       >
 
-        {/* 🚀 Premium Global Loader */}
-        <AnimatePresence>
-          {loading && !weather && (
-            <motion.div
-              key="global-loader"
-              initial={{ opacity: 1 }}
-              exit={{ opacity: 0, scale: 1.05 }}
-              transition={{ duration: 0.8, ease: "circOut" }}
-              className="fixed inset-0 z-[1000]"
-            >
-              <PremiumLoading />
-            </motion.div>
-          )}
-        </AnimatePresence>
+
 
         {/* 🔍 Google Style Search Bar */}
         <header className="flex flex-col md:flex-row items-center gap-4 w-full relative z-[100]">
@@ -454,11 +442,12 @@ export default function GoogleWeatherApp() {
           )}
         </AnimatePresence>
 
-        {(loading && !weather) ? (
-          <div className="h-[80vh]" /> // Spacer to prevent layout shift while loader is active
-        ) : (
+        {loading ? (
+          <MainSkeleton />
+        ) : weather ? (
           <>
             <section className="flex flex-col items-center text-center py-6 md:py-10 relative">
+
 
               <motion.div
                 initial={{ scale: 0.9, opacity: 0 }}
@@ -564,7 +553,12 @@ export default function GoogleWeatherApp() {
               </BentoCard>
             </div>
           </>
-        )}
+        ) : error ? (
+          <div className="py-20 text-center">
+            <p className="text-[#5f6368] font-bold">Please search for a location to view weather data.</p>
+          </div>
+        ) : null}
+
       </motion.div>
 
       <footer className="w-full py-8 border-t border-slate-200/50 relative z-20 mt-12 bg-white/30 backdrop-blur-sm">
