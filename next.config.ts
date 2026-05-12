@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import withPWA from 'next-pwa';
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
@@ -18,7 +19,21 @@ const nextConfig: NextConfig = {
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
   },
+  // Experimental optimizations
+  experimental: {
+    optimizePackageImports: ['react-icons', 'lucide-react', 'framer-motion'],
+  },
+  turbopack: {}, // Silence Turbopack vs Webpack config warning (Root level)
 };
 
 
-export default nextConfig;
+const pwaConfig = withPWA({
+  dest: 'public',
+  register: true,
+  skipWaiting: true,
+  disable: process.env.NODE_ENV === 'development',
+});
+
+export default pwaConfig(nextConfig);
+
+

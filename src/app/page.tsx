@@ -67,6 +67,9 @@ const InteractiveMap = dynamic(
   { ssr: false, loading: () => <div className="w-full h-full bg-slate-50 animate-pulse rounded-[28px]" /> }
 );
 
+const PremiumLoading = dynamic(() => import('@/components/brain/PremiumLoading').then(mod => mod.PremiumLoading), { ssr: false });
+
+
 const BentoCard = ({ title, icon: Icon, children, className, loading }: any) => (
   <motion.div
     whileHover={loading ? {} : { y: -4 }}
@@ -278,8 +281,24 @@ export default function GoogleWeatherApp() {
         className="max-w-4xl mx-auto pt-4 md:pt-6 px-4 md:px-0 space-y-6 relative z-10"
       >
 
+        {/* 🚀 Premium Global Loader */}
+        <AnimatePresence>
+          {loading && !weather && (
+            <motion.div
+              key="global-loader"
+              initial={{ opacity: 1 }}
+              exit={{ opacity: 0, scale: 1.05 }}
+              transition={{ duration: 0.8, ease: "circOut" }}
+              className="fixed inset-0 z-[1000]"
+            >
+              <PremiumLoading />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* 🔍 Google Style Search Bar */}
         <header className="flex flex-col md:flex-row items-center gap-4 w-full relative z-[100]">
+
           <div
             onClick={(e) => e.stopPropagation()}
             className="flex-1 flex items-center flex-nowrap gap-2 bg-white/80 backdrop-blur-md px-3 md:px-6 py-3 rounded-full shadow-sm border border-[#f0f0f0] w-full relative"
@@ -435,11 +454,12 @@ export default function GoogleWeatherApp() {
           )}
         </AnimatePresence>
 
-        {loading ? (
-          <MainSkeleton />
+        {(loading && !weather) ? (
+          <div className="h-[80vh]" /> // Spacer to prevent layout shift while loader is active
         ) : (
           <>
             <section className="flex flex-col items-center text-center py-6 md:py-10 relative">
+
               <motion.div
                 initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
