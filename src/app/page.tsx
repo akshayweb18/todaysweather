@@ -20,42 +20,42 @@ import {
   RiNavigationLine,
   RiCloseLine
 } from 'react-icons/ri';
-const AQIMeter = dynamic(() => import('@/components/brain/AQIMeter').then(mod => mod.AQIMeter), { 
-  ssr: false, 
-  loading: () => <div className="h-48 w-full bg-slate-100 animate-pulse rounded-[28px]" /> 
+const AQIMeter = dynamic(() => import('@/components/brain/AQIMeter').then(mod => mod.AQIMeter), {
+  ssr: false,
+  loading: () => <div className="h-48 w-full bg-slate-100 animate-pulse rounded-[28px]" />
 });
-const ExtendedForecast = dynamic(() => import('@/components/brain/ExtendedForecast').then(mod => mod.ExtendedForecast), { 
-  ssr: false, 
-  loading: () => <div className="h-64 w-full bg-slate-100 animate-pulse rounded-[28px]" /> 
+const ExtendedForecast = dynamic(() => import('@/components/brain/ExtendedForecast').then(mod => mod.ExtendedForecast), {
+  ssr: false,
+  loading: () => <div className="h-64 w-full bg-slate-100 animate-pulse rounded-[28px]" />
 });
-const HourlyForecast = dynamic(() => import('@/components/timeline/HourlyForecast').then(mod => mod.HourlyForecast), { 
-  ssr: false, 
-  loading: () => <div className="h-32 w-full bg-slate-100 animate-pulse rounded-[28px]" /> 
+const HourlyForecast = dynamic(() => import('@/components/timeline/HourlyForecast').then(mod => mod.HourlyForecast), {
+  ssr: false,
+  loading: () => <div className="h-32 w-full bg-slate-100 animate-pulse rounded-[28px]" />
 });
-const ClimateAnalytics = dynamic(() => import('@/components/brain/ClimateAnalytics').then(mod => mod.ClimateAnalytics), { 
-  ssr: false, 
-  loading: () => <div className="h-48 w-full bg-slate-100 animate-pulse rounded-[28px]" /> 
+const ClimateAnalytics = dynamic(() => import('@/components/brain/ClimateAnalytics').then(mod => mod.ClimateAnalytics), {
+  ssr: false,
+  loading: () => <div className="h-48 w-full bg-slate-100 animate-pulse rounded-[28px]" />
 });
-const TacticalMetrics = dynamic(() => import('@/components/brain/TacticalMetrics').then(mod => mod.TacticalMetrics), { 
-  ssr: false, 
-  loading: () => <div className="h-48 w-full bg-slate-100 animate-pulse rounded-[28px]" /> 
+const TacticalMetrics = dynamic(() => import('@/components/brain/TacticalMetrics').then(mod => mod.TacticalMetrics), {
+  ssr: false,
+  loading: () => <div className="h-48 w-full bg-slate-100 animate-pulse rounded-[28px]" />
 });
-const SolarPath = dynamic(() => import('@/components/brain/SolarPath').then(mod => mod.SolarPath), { 
-  ssr: false, 
-  loading: () => <div className="h-48 w-full bg-slate-100 animate-pulse rounded-[28px]" /> 
+const SolarPath = dynamic(() => import('@/components/brain/SolarPath').then(mod => mod.SolarPath), {
+  ssr: false,
+  loading: () => <div className="h-48 w-full bg-slate-100 animate-pulse rounded-[28px]" />
 });
-const PressureGauge = dynamic(() => import('@/components/brain/PressureGauge').then(mod => mod.PressureGauge), { 
-  ssr: false, 
-  loading: () => <div className="h-48 w-full bg-slate-100 animate-pulse rounded-[28px]" /> 
+const PressureGauge = dynamic(() => import('@/components/brain/PressureGauge').then(mod => mod.PressureGauge), {
+  ssr: false,
+  loading: () => <div className="h-48 w-full bg-slate-100 animate-pulse rounded-[28px]" />
 });
-const WindCompass = dynamic(() => import('@/components/brain/WindCompass').then(mod => mod.WindCompass), { 
-  ssr: false, 
-  loading: () => <div className="h-48 w-full bg-slate-100 animate-pulse rounded-[28px]" /> 
+const WindCompass = dynamic(() => import('@/components/brain/WindCompass').then(mod => mod.WindCompass), {
+  ssr: false,
+  loading: () => <div className="h-48 w-full bg-slate-100 animate-pulse rounded-[28px]" />
 });
-const WeatherAtmosphere = dynamic(() => import('@/components/brain/WeatherAtmosphere').then(mod => mod.WeatherAtmosphere), { 
-  ssr: false 
+const WeatherAtmosphere = dynamic(() => import('@/components/brain/WeatherAtmosphere').then(mod => mod.WeatherAtmosphere), {
+  ssr: false
 });
-const AnimatedWeatherIcon = dynamic(() => import('@/components/brain/AnimatedWeatherIcon').then(mod => mod.AnimatedWeatherIcon), { 
+const AnimatedWeatherIcon = dynamic(() => import('@/components/brain/AnimatedWeatherIcon').then(mod => mod.AnimatedWeatherIcon), {
   ssr: false,
   loading: () => <div className="w-20 h-20 bg-slate-100 animate-pulse rounded-full" />
 });
@@ -239,8 +239,8 @@ export default function GoogleWeatherApp() {
           console.warn("[GPS] Location denied or failed, attempting IP-based fallback.");
           fetchFallbackLocation();
         },
-        { 
-          enableHighAccuracy: true, 
+        {
+          enableHighAccuracy: true,
           timeout: 10000, // Increased timeout for better satellite lock
           maximumAge: 0   // Ensure fresh data
         }
@@ -326,7 +326,7 @@ export default function GoogleWeatherApp() {
                         console.warn("Geolocation denied.");
                         setGeoLoading(false);
                       },
-                      { 
+                      {
                         enableHighAccuracy: true,
                         timeout: 10000,
                         maximumAge: 0
@@ -520,8 +520,8 @@ export default function GoogleWeatherApp() {
 
             <div id="solar-telemetry" className="grid grid-cols-1 gap-4 scroll-mt-24">
               <BentoCard title="Sunrise & Sunset" icon={RiSunLine} className="md:col-span-1">
-                <SolarPath 
-                  sunrise={weather?.sunrise} 
+                <SolarPath
+                  sunrise={weather?.sunrise}
                   sunset={weather?.sunset}
                   rawSunrise={weather?.rawSunrise}
                   rawSunset={weather?.rawSunset}
