@@ -187,7 +187,25 @@ export default function GoogleWeatherApp() {
 
     setLoading(true);
     setError('');
+
+    // 🚀 Client-Side Fast Cache (Offline-First)
+    const clientCacheKey = `weather_cache_${lat}_${lon}_${searchCity}`;
+    const cachedData = localStorage.getItem(clientCacheKey);
+    if (cachedData) {
+      try {
+        const parsed = JSON.parse(cachedData);
+        // Show cached data immediately if it's less than 1 hour old
+        if (Date.now() - parsed.timestamp < 3600000) {
+          setWeather(parsed.data);
+          setLoading(false); // We have data, can stop showing main loader
+        }
+      } catch (e) {
+        localStorage.removeItem(clientCacheKey);
+      }
+    }
+
     try {
+
       let url = `/api/agent?city=${encodeURIComponent(searchCity)}`;
       if (lat !== undefined && lon !== undefined) {
         url = `/api/agent?lat=${lat}&lon=${lon}`;
@@ -200,7 +218,13 @@ export default function GoogleWeatherApp() {
         if (data.success) {
           setWeather(data.data);
           setError('');
+          // Update client-side cache
+          localStorage.setItem(clientCacheKey, JSON.stringify({
+            data: data.data,
+            timestamp: Date.now()
+          }));
         } else {
+
           setError(data.error || 'Location not found.');
         }
       } else if (!res.ok) {
